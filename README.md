@@ -1,0 +1,4 @@
+Assignment: Simulation Study of a Branching Process
+In this chapter, we are studying the behavior of programs/jobs running on a CPU (or multiple CPUs in parallel). We were interested in the distribution of the completion time for the entire system. In particular, we wanted to know which combinations of job creation and job completion rates leads to processes that definitely complete in finite time and those that might never complete.
+
+For this case study, choose one (and only one) of the following problems from the back of chapter 6, 9, 10, or 11 (page 307 in NTL text). Write a report on your analysis, including introduction, background, methods, results, and conclusions/discussions. We will spend time in the live session or in asynchronous materials on cleaning the data; therefore, your write-up need only focus on answering the question of your choice. In other words, you do not have to include code that is already in the chapter or in other class materials.
