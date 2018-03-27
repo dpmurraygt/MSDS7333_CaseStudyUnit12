@@ -20,6 +20,7 @@ rates = c(seq(0.1, 1, by = 0.1), seq(2, 7, by = 1))
 samples = lapply(rates, function(r) {
              replicate(6000, sum(rexp(n = 3, rate = r))) })
 
+#create a PDF that has visualization of multiple different outcomes of cumulative distribution versus values of x
 pdf("BA_MCexample.pdf", width = 8, height = 5)
 par(mar = c(2,4,1,1))
 plot(0, 0, xlim = c(-0.1, 10), ylim = c(0, 1), pch = ".",
@@ -43,29 +44,37 @@ mapply(function(lab, s, x, r, p)
 
 dev.off()
 
+#random seed for reproducibility
 seedx = 116201412
 set.seed(seedx)
 
+#create a value d0 from exponential distribution with a rate of 0.3
 kappa = 0.3
 d0 = rexp(1, rate = kappa)
 d0
 
+#create a value birth1 from exponential distribution with a rate of 0.5
 lambda = 0.5
 birth1 = rexp(1, rate = lambda)
 birth1
 
+#recursively building itime
 itime = c(birth1, rexp(1, rate = lambda))
 itime
 
 itime = c(itime, rexp(1, rate = lambda))
 itime
 
+#calculate the cumulative sum (same length as vector) of itime
 cumsum(itime)
 
 itime = c(itime, rexp(1, rate = lambda))
+
+#btime is comprised of the cumsum of itimes
 btime = cumsum(itime)
 btime
 
+#keep only btime entries that are < d0
 btime = btime[ btime < d0 ]
 
 dtime = d0 + rexp(n = length(btime), rate = kappa) 

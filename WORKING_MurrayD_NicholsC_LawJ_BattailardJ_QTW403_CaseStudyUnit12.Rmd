@@ -43,8 +43,15 @@ knitr::opts_chunk$set(echo = FALSE)
 ## Results
 
 ## Conclusions and Future Work
+The use of simulation, and especially Monte Carlo simulation, has become an increasing part of the public lexicon in recent years.  Many models that are visible to the public include at some level a Monte Carlo simulation.  These include election results modeling, as well as the outcomes of major sports leagues.  Fivethirtyeight.com's models for both the election, as well as for results of sports leagues, include Monte Carlo simulations. [1]  The method has also been mentioned in the context of quantative finance, genetics and many other fields.
+
+The pitfalls of Monte Carlo simulation may be somewhat obvious.  It relies on an assumption that the future follows some probabalistic distribution, and that the future distribution is consistent with the past values of the variable.  Like most statistically-based forecast methods, there's some expectation that major shifts in the underlying causes of change in the behavior of the variable will remain the same.  In the example of a model for a Financial Market, while the major shifts and catastrophic market events are possible in the simulation, the actual probability of the event might differ from the *n*-standard deviations from the mean that would be expected.
+
+
 
 ## References
+[1] https://fivethirtyeight.com/features/how-our-club-soccer-projections-work/
+[2] https://www.sciencedirect.com/science/article/pii/S0168160509006680
 
 ## APPENDIX - BOOK CODE
 ```{r book_code}
@@ -280,7 +287,7 @@ image(lambdas, kappas, mcGridProp20kidsMat, col = colors,
       xlim = c(0.05, 3.05), ylim = c(0.05, 3.05))
 
 midBreaks = (breaks[ -8 ] + breaks[ -1 ]) / 2
-legend(x = 0.1, y = 3.25, legend = midBreaks, fill = cols, 
+legend(x = 0.1, y = 3.25, legend = midBreaks, fill = colors, 
        bty = "n", ncol = 7,  xpd = TRUE)
 
 par(oldPar)
