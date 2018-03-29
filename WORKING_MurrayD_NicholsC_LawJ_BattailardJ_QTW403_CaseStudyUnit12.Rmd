@@ -34,20 +34,43 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Abstract
 
+Monte Carlo simulation is an extremely useful method to analyze complex mathematical relationships. When used to investigate a stochastic process, Monte Carlo simulation allows a researcher to analyze thousands of independent random outcomes given underlying distributional assumptions. In this paper, we model computer job queueing as a Poisson process. We use a Poisson distribution to estimate the number of jobs and an exponential distribution to estimate the lifetime of each respective job. We investigate the number of jobs created given these assumptions by simulating outcomes using different values of the Poisson lambda and exponential rate parameters. We find that the ratio of the two distribution parameters is more important than two discrete values in determining the number of jobs created. Thus, simulation parameters can be simplified to use only the ratio of the two parameters instead of iterating over hundreds of combinations.
+
+
 ## Introduction
 
-## Background
+In the context of software engineering, it is often good practice to anticipate the likelihood of a release date, the cost of a project, or the impact of implementing new code base. These types of exercises usually fall into the category of risk analysis. However, it is often extremely difficult to successfully identify or anticipate outcomes if those outcomes are considered mostly random. One such software engineering example proudcing random outcomes is computer job queueing. 
+
+Even with parallel processing, a queue of interdependent tasks can form, often slowing down processing time. The number of these tasks can be completely random, specifically when considering the amount and type of requests the computer must consider. Typically, a parent job generates children which then generate more children. Additionally, each one of these child jobs have a particular lifetime or run time and can generate additional child jobs. Each job ultimately depends on the completion of prior tasks, causing a slow down in processing time. 
+
+In order to model the queueing process we must utilize probability distributions to estimate the number of jobs created and their associated lifetimes. Given the randomness of the queueing process, we explore many different outcomes utilizing these probability distributions via Monte Carlo simulation. These simulations allow us to explore the distributions of job counts our queue model produces.
+
+Of particular importance are the associated distributional parameters that must be identified as part of our simulation analysis. Our objective is to determine if these parameters and their values are related to the longevity of the queueing process. Specifically, we investigate whether discrete parameter values or the ratio of the two parameters is more important to the longevity of the queueing process.
+
+In the following section, we review academic literature on stochastic processes and Monte Carlo simulation. In the methods section, we provide a description of the probability distribution assumptions used to model the CPU queueing process. We also identify the parameter selections and logic used to test the sensitivity of our model given the distributional parameters. Results of Monte Carlo simulation for the queueing process and associated parameters are then presented and compared. We conclude this paper by summarizing results and considering future work.
+
+
+## Background and Literature Review
+
+
 
 ## Methods
+
+## started this on accident as I was typing, made more sense here. This is not done so please continue or replace. 
+
+In order to anticipate job counts for our queueing example, we need to identify a method to model the previously described queue forming process. Given each job has a fixed lifetime and we are interested in the number of child jobs each parent job generates, we use a Poisson process to count the number of jobs. Given we view each job over a fixed interval of time, we can use the Poission distribution to estimate the number of jobs each parent generates. Additionally, each job runs for a certain amount of time. We can generate these run times using a random variable from the exponential distribution to determine the lifetime of each job.
 
 ## Results
 
 ## Conclusions and Future Work
+
 The use of simulation, and especially Monte Carlo simulation, has become an increasing part of the public lexicon in recent years.  Many models that are visible to the public include at some level a Monte Carlo simulation.  These include election results modeling, as well as the outcomes of major sports leagues.  Fivethirtyeight.com's models for both the election, as well as for results of sports leagues, include Monte Carlo simulations. [1]  The method has also been mentioned in the context of quantative finance, genetics and many other fields.
 
 The pitfalls of Monte Carlo simulation may be somewhat obvious.  It relies on an assumption that the future follows some probabalistic distribution, and that the future distribution is consistent with the past values of the variable.  Like most statistically-based forecast methods, there's some expectation that major shifts in the underlying causes of change in the behavior of the variable will remain the same.  In the example of a model for a Financial Market, while the major shifts and catastrophic market events are possible in the simulation, the actual probability of the event might differ from the *n*-standard deviations from the mean that would be expected.
 
-In this case, we simulated a process of birth and death of jobs, with dependencies between the start and finish, to understand the total time required.  In the context of the case, these events were referenced as jobs or processes that are broken up for parallel computing, and the process by which the later jobs must wait for the completion of earlier jobs.  This same method could be employed for the analysis of a manufacturing line.  In manufacturing, the Monte Carlo process can be used to simulate a process with interdependencies, and variability.  The use of the simulation can be used to identified bottlenecks in the process.[3]
+In this case, we simulated a process of birth and death of jobs, with dependencies between the start and finish, to understand the total time required.  In the context of the case, these events were referenced as jobs or processes that are broken up for parallel computing, and the process by which the later jobs must wait for the completion of earlier jobs.  This same method could be employed for the analysis of a manufacturing line.  In manufacturing, the Monte Carlo process can be used to simulate a process with interdependencies, and variability. 
+
+The use of the simulation can be used to identified bottlenecks in the process.[3]
 
 
 
