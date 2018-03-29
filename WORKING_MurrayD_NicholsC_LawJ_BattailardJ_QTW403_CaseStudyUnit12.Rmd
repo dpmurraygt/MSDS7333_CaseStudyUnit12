@@ -58,7 +58,6 @@ genKidsV = function(bTimes, cTimes, parentID, lambda = 0.5, kappa = 0.3) {
   parentAge = cTimes - bTimes
   # get interarrival times (births)
   numKids = rpois(n = length(parentAge), lambda = lambda * parentAge)
-  
   # if for some reason no children, return NULL
   if (sum(numKids) == 0) return(NULL)
   
@@ -67,10 +66,12 @@ genKidsV = function(bTimes, cTimes, parentID, lambda = 0.5, kappa = 0.3) {
   # pass in vectors of numKids, birthTimes and completeTimes
   kidStats = 
     mapply(function(n, min, max) {
+      # get birth times for number of kids as part of uniform dist.
+      # sort them ascending
       births = sort(runif(n, min, max))
       # get lifetimes as exponential
       runtimes = rexp(n, rate = kappa)
-      # add it to parent's complete time
+      # add it to parent's complete time (max)
       completes = rep(max, n) + runtimes
       # wrap it in a df
       data.frame(births, completes)
@@ -87,44 +88,215 @@ genKidsV = function(bTimes, cTimes, parentID, lambda = 0.5, kappa = 0.3) {
 }
 
 # use familyTree with maxGen and maxOffspring params
+# this function grows a tree instead of applying directly
+# to genKidsV
 familyTree = function(lambda = 0.5, kappa = 0.3, 
                       maxGen = 10, maxOffspring = 1000) {
 
-       # Return value - a list with 1 data frame per generation.
+  # Return value - a list with 1 data frame per generation.
   allGens = vector(mode = "list", length = maxGen)
   
-       # Generate root of the tree
+  # Generate root of the tree
   allGens[[1]] = data.frame(parentID = NA, kidID = 1, 
-                            births = 0, 
-                            completes = rexp(1, rate = kappa))
+                            births = 0, # parent is born at 0
+                            completes = rexp(1, rate = kappa)) # parent complete 
   
+  # sentry for number of offspring
   currentNumOffspring = 0
 
-       # Generate future generations, one at a time.
+  # Generate future generations, one at a time.
   for (i in 2:maxGen) {
-    nextGen = genKidsV(bTimes = allGens[[ (i - 1) ]]$births,
-                       cTimes = allGens[[ (i - 1) ]]$completes,
-                       parentID = allGens[[ (i - 1) ]]$kidID,
-                       lambda = lambda, kappa = kappa)
+    nextGen = genKidsV(bTimes = allGens[[ (i - 1) ]]$births, # pass vector of births
+                       cTimes = allGens[[ (i - 1) ]]$completes, # pass vector of completes
+                       parentID = allGens[[ (i - 1) ]]$kidID, # pass kidID from prev
+                       lambda = lambda, kappa = kappa) # lambda and kappas for kids and lifetimes
+    
+    # if nextGen DF is null, return all before current
     if (is.null(nextGen)) return(allGens[ 1:(i - 1) ]) 
+    # else append this generation to the list
     allGens[[ i ]] = nextGen
+    # increment sentry var
     currentNumOffspring = currentNumOffspring + nrow(nextGen)
+    # stopping condition for number of offspring
     if (currentNumOffspring > maxOffspring) 
       return(allGens[1:i])
   }  
   allGens
 }
 
-set.seed(seed2)
-tree = familyTree(lambda = 1, kappa = 0.5, 
-                  maxGen = 100, maxOffspring = 1000)
 
+# iterates over each generation to get num rows
+# takes length of entire df to agg num gens
+exptOne = function(l, k, mG, mO){
+  # Helper function to call familyTree
+  # Returns - summary statistics for analysis,
+  
+  aTree = familyTree(lambda = l, kappa = k, maxGen = mG,
+                      maxOffspring = mO)
+  numGen = length(aTree)
+  numJobs = sum(sapply(aTree, nrow))
+  c(numGen, numJobs)
+}
+
+
+
+# MCBA takes a parameter matrix to iterate over
+# it also implements a repeat for monte carlo sims per
+# parameter combination
+# returns a matrix with cols == number of reps, with each
+# column containing num gens and num off spring in rows
+MCBA = function(params, repeats = 5, mG = 10, mO = 1000){
+  # params: matrix columns of lambda and kappa values
+  # For each lambda and kappa pair, run "repeats" times
+  
+  n = nrow(params)
+  mcResults = vector("list", length = n)
+  
+  for (i in 1:n) {
+    cat("param set is ", i, "\n")
+    mcResults[[i]] = replicate(repeats,
+                               exptOne(l = params[i, 1],
+                                       k = params[i, 2],
+                                       mG = mG, 
+                                       mO = mO))
+  }
+  mcResults
+}
+
+
+# basic simulation
+trialKappas = c(0.1, 10, 0.1, 10)
+trialLambdas = c(0.1, 0.1, 10, 10)
+trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
+mcTrialOutput = MCBA(params = trialParams, repeats = 100, 
+                     mG = 200, mO = 1000)
+
+#save(mcTrialOutput, file = "mcTrialOutput.rda")
+
+oldPar = par(mfrow = c(2, 2), mar = c(3,3,1,1))
+
+# plot 4 scatters showing the generations and
+# number of children / offspring given trialParams
+# call invis here b/c output is null in console
+invisible(mapply(function(oneSet, lambda, kappa) {
+  plot(x = oneSet[2,], y = jitter(oneSet[1, ], 1), log = "x",
+       ylim = c(1,20), xlim = c(1, 10^7), pch = 19, cex = 0.6,
+       xlab = "num offspring", ylab = "jittered generations1")
+  text(x = 50, y = 15, bquote(paste(lambda == .(lambda))) )
+  text(x = 300, y = 15, bquote(paste(kappa == .(kappa))) )
+  
+  }, 
+  mcTrialOutput, lambda = trialLambdas, kappa = trialKappas,
+  SIMPLIFY = TRUE))
+
+par(oldPar)
+
+# create a param grid
+
+lambdas = c(seq(0.1, 0.6, by = 0.1), seq(0.8, 2, by = 0.2), 
+            seq(2.25, 3, by = 0.25))
+kappas = c(lambdas, 3.25, 3.50, 3.75, 4.00, 4.50, 5.00)
+
+# expand grid results in a df, cast as matrix
+paramGrid = as.matrix(expand.grid(lambdas, kappas))
+
+#registerDoParallel(cores=4)
+#mcGrid = MCBA(params = paramGrid, # parameter matrix
+#              repeats = 400, # 400 simulations of familyTree for each param combo
+#              mG = 20, # max generations per tree
+#              mO = 1000) # max offspring
+
+save(mcGrid, file = "data/mcGridOutput2.rda")
+
+
+# viz - upper quartile of complete times
+logUQkids = sapply(mcGrid, function(x) 
+               log(quantile(x[2, ], probs = 0.75), base = 10))
+
+UQCut = cut(logUQkids, breaks = c(-0.1, 0.5, 2, max(logUQkids)) )
+# get colors for each cut cat
+color3 = c("#b3cde3aa", "#8856a7aa", "#810f7caa")
+colors = color3[UQCut] # map colors to each upper quartile cut
+
+# 3D plot upper quartiles
+library(scatterplot3d)
+sdp = scatterplot3d(x = paramGrid[ , 1], y = paramGrid[ , 2], 
+                    z = logUQkids, pch = 15, color = colors,
+                    xlab = "Lambda", ylab = "Kappa",
+                    zlab = "Upper Quartile Offspring",
+                    angle = 120, type="h")
+
+legend("left", inset = .08, bty = "n", cex = 0.8,
+       legend = c("[0, 0.5)", "[0.5, 2)", "[2, 5)"), 
+       fill = color3)
+
+
+
+# plot
+oldPar  = par(mar = c(4.1, 4.1, 0.5, 0.5))
+
+
+# what proportions of families for each parameter set hit limits
+# of simulation? in this case 20 generations or 1000 offspring
+# notice that low values of K (lifetimes) always result in max simulations
+# low values of lambda quit out early
+mcGridAlive = sapply(mcGrid, function(oneParamSet) {
+  sum((oneParamSet[1,] == 20) | (oneParamSet[2,] > 1000)) / 
+    length(oneParamSet[2,]) })
+
+filled.contour(lambdas, kappas, 
+               matrix(mcGridAlive, nrow = length(lambdas), 
+                      ncol = length(kappas)), 
+               xlab = "Lambda", ylab = "Kappa", 
+               xlim = c(0.1, 3), ylim = c(0.1, 3.1)) 
+title('Proportion of Generations > Limit')
+par(oldPar)
+
+
+# plot
+oldPar  = par(mar = c(4.1, 4.1, 2, 1))
+
+
+# proportion of simulations that have 20 or more offspring
+mcGridProp20kids = sapply(mcGrid, function(oneParamSet) {
+  sum(oneParamSet[2,] > 19) / length(oneParamSet[2,]) })
+
+# matrix for z value in image() 
+mcGridProp20kidsMat = matrix(mcGridProp20kids, 
+                             nrow = length(lambdas), 
+                             ncol = length(kappas))
+
+# breaks and colors for the image map based on proportion cuts
+breaks = c(0, 0.10, 0.2, 0.3, 0.5, 0.7, 0.9, 1)
+colors = rev(rainbow(10))[-(1:3)]
+
+image(lambdas, kappas, mcGridProp20kidsMat, col = colors,
+      breaks = breaks, xlab = "Lambda", ylab = "Kappa", 
+      xlim = c(0.05, 3.05), ylim = c(0.05, 3.05))
+
+midBreaks = (breaks[ -8 ] + breaks[ -1 ]) / 2
+legend(x = 0.1, y = 3.25, legend = midBreaks, fill = colors, 
+       bty = "n", ncol = 7,  xpd = TRUE)
+
+par(oldPar)
+
+```
+```{r extra_viz}
+
+
+set.seed(seed1)
+tree = familyTree(lambda = 0.4, 
+                  kappa = 1, 
+                  maxGen = 10, 
+                  maxOffspring = 100)
+
+# 3209 offspring w/2616 offspring in last gen
 length(tree)
 sapply(tree, nrow)
 sum(sapply(tree, nrow))
 
 
-# viz
+# viz gens
 maxLife = max(sapply(tree, function(gen) max(gen$completes)))
 numFamily = sum(sapply(tree, nrow))
 
@@ -152,137 +324,7 @@ mapply(function(gen, nextGen, birthNum) {
   },
   gen = tree, nextGen = treeN, birthNum = birthNum )
 
-
-exptOne = function(l, k, mG, mO){
-  # Helper function to call familyTree
-  # Returns - summary statistics for analysis,
-  
-  aTree = familyTree(lambda = l, kappa = k, maxGen = mG,
-                      maxOffspring = mO)
-  numGen = length(aTree)
-  numJobs = sum(sapply(aTree, nrow))
-  c(numGen, numJobs)
-}
-
 set.seed(seed2)
 exptOne(1, 0.5, 100, 1000)
 
-MCBA = function(params, repeats = 5, mG = 10, mO = 1000){
-       # params: matrix columns of lambda and kappa values
-       # For each lambda and kappa pair, run "repeats" times
-  
-  n = nrow(params)
-  mcResults = vector("list", length = n)
-  
-  for (i in 1:n) {
-    cat("param set is ", i, "\n")
-    mcResults[[i]] = replicate(repeats,
-                               exptOne(l = params[i, 1],
-                                       k = params[i, 2],
-                                       mG = mG, mO = mO))
-  }
-  mcResults
-}
-
-#trialKappas = c(0.1, 10, 0.1, 10)
-#trialLambdas = c(0.1, 0.1, 10, 10)
-#trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
-#mcTrialOutput = MCBA(params = trialParams, repeats = 100, 
-#                     mG = 200, mO = 1000)
-
-#save(mcTrialOutput, file = "mcTrialOutput.rda")
-
-oldPar = par(mfrow = c(2, 2), mar = c(3,3,1,1))
-
-# plot 4 scatters showing the generations and
-# number of children / offspring given trialParams
-
-mapply(function(oneSet, lambda, kappa) {
-  plot(x = oneSet[2,], y = jitter(oneSet[1, ], 1), log = "x",
-       ylim = c(1,20), xlim = c(1, 10^7), pch = 19, cex = 0.6)
-  text(x = 50, y = 15, bquote(paste(lambda == .(lambda))) )
-  text(x = 300, y = 15, bquote(paste(kappa == .(kappa))) )
-  }, 
-  mcTrialOutput, lambda = trialLambdas, kappa = trialKappas)
-
-par(oldPar)
-
-# create a param grid
-
-lambdas = c(seq(0.1, 0.6, by = 0.1), seq(0.8, 2, by = 0.2), 
-            seq(2.25, 3, by = 0.25))
-kappas = c(lambdas, 3.25, 3.50, 3.75, 4.00, 4.50, 5.00)
-
-paramGrid = as.matrix(expand.grid(lambdas, kappas))
-
-registerDoParallel(cores=4)
-mcGrid = MCBA(params = paramGrid, 
-              repeats = 400, 
-              mG = 20,
-              mO = 1000)
-
-save(mcGrid, file = "data/mcGridOutput.rda")
-
-
-# viz - upper quartile of complete times
-logUQkids = sapply(mcGrid, function(x) 
-               log(quantile(x[2, ], probs = 0.75), base = 10))
-
-UQCut = cut(logUQkids, breaks = c(-0.1, 0.5, 2, max(logUQkids)) )
-color3 = c("#b3cde3aa", "#8856a7aa", "#810f7caa")
-colors = color3[UQCut]
-
-# 3D plot upper quartiles
-library(scatterplot3d)
-sdp = scatterplot3d(x = paramGrid[ , 1], y = paramGrid[ , 2], 
-                    z = logUQkids, pch = 15, color = colors,
-                    xlab = "Lambda", ylab = "Kappa",
-                    zlab = "Upper Quartile Offspring",
-                    angle = 120, type="h")
-
-legend("left", inset = .08, bty = "n", cex = 0.8,
-       legend = c("[0, 0.5)", "[0.5, 2)", "[2, 5)"), 
-       fill = color3)
-
-
-
-# plot
-oldPar  = par(mar = c(4.1, 4.1, 0.5, 0.5))
-
-mcGridAlive = sapply(mcGrid, function(oneParamSet) {
-  sum((oneParamSet[1,] == 20) | (oneParamSet[2,] > 1000)) / 
-    length(oneParamSet[2,]) })
-
-filled.contour(lambdas, kappas, 
-               matrix(mcGridAlive, nrow = length(lambdas), 
-                      ncol = length(kappas)), 
-               xlab = "Lambda", ylab = "Kappa", 
-               xlim = c(0.1, 3), ylim = c(0.1, 3.1)) 
-
-par(oldPar)
-
-
-# plot
-oldPar  = par(mar = c(4.1, 4.1, 2, 1))
-
-mcGridProp20kids = sapply(mcGrid, function(oneParamSet) {
-  sum(oneParamSet[2,] > 19) / length(oneParamSet[2,]) })
-
-mcGridProp20kidsMat = matrix(mcGridProp20kids, 
-                             nrow = length(lambdas), 
-                             ncol = length(kappas))
-
-breaks = c(0, 0.10, 0.2, 0.3, 0.5, 0.7, 0.9, 1)
-colors = rev(rainbow(10))[-(1:3)]
-
-image(lambdas, kappas, mcGridProp20kidsMat, col = colors,
-      breaks = breaks, xlab = "Lambda", ylab = "Kappa", 
-      xlim = c(0.05, 3.05), ylim = c(0.05, 3.05))
-
-midBreaks = (breaks[ -8 ] + breaks[ -1 ]) / 2
-legend(x = 0.1, y = 3.25, legend = midBreaks, fill = cols, 
-       bty = "n", ncol = 7,  xpd = TRUE)
-
-par(oldPar)
 ```
-
