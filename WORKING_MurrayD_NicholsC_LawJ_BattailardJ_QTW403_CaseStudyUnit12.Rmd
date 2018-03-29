@@ -43,8 +43,18 @@ knitr::opts_chunk$set(echo = FALSE)
 ## Results
 
 ## Conclusions and Future Work
+The use of simulation, and especially Monte Carlo simulation, has become an increasing part of the public lexicon in recent years.  Many models that are visible to the public include at some level a Monte Carlo simulation.  These include election results modeling, as well as the outcomes of major sports leagues.  Fivethirtyeight.com's models for both the election, as well as for results of sports leagues, include Monte Carlo simulations. [1]  The method has also been mentioned in the context of quantative finance, genetics and many other fields.
+
+The pitfalls of Monte Carlo simulation may be somewhat obvious.  It relies on an assumption that the future follows some probabalistic distribution, and that the future distribution is consistent with the past values of the variable.  Like most statistically-based forecast methods, there's some expectation that major shifts in the underlying causes of change in the behavior of the variable will remain the same.  In the example of a model for a Financial Market, while the major shifts and catastrophic market events are possible in the simulation, the actual probability of the event might differ from the *n*-standard deviations from the mean that would be expected.
+
+In this case, we simulated a process of birth and death of jobs, with dependencies between the start and finish, to understand the total time required.  In the context of the case, these events were referenced as jobs or processes that are broken up for parallel computing, and the process by which the later jobs must wait for the completion of earlier jobs.  This same method could be employed for the analysis of a manufacturing line.  In manufacturing, the Monte Carlo process can be used to simulate a process with interdependencies, and variability.  The use of the simulation can be used to identified bottlenecks in the process.[3]
+
+
 
 ## References
+[1] https://fivethirtyeight.com/features/how-our-club-soccer-projections-work/
+[2] https://www.sciencedirect.com/science/article/pii/S0168160509006680
+[3] https://www.qualitymag.com/articles/91769-monte-carlo-and-manufacturing
 
 ## APPENDIX - BOOK CODE
 ```{r book_code}
