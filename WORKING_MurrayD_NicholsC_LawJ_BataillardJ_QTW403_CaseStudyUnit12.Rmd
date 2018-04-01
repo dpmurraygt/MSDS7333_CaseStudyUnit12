@@ -1,8 +1,9 @@
 ---
-title: "Branching Processes: Simulating Birth and Assassinations .... update this"
+title: 'Branching Processes: Simulating Birth and Assassinations .... update this'
 author: "Dennis Murray, Jared Law, Julien Bataillard, Cory Nichols"
 date: "April 3rd, 2018"
 output:
+  pdf_document: default
   word_document:
     fig_caption: yes
 section: MSDS 7333-403 - Quantifying the World - Case Study 6 (Unit 12)
@@ -50,7 +51,28 @@ Of particular importance are the associated distributional parameters that must 
 In the following section, we review academic literature on stochastic processes and Monte Carlo simulation. In the methods section, we provide a description of the probability distribution assumptions used to model the CPU queueing process. We also identify the parameter selections and logic used to test the sensitivity of our model given the distributional parameters. Results of Monte Carlo simulation for the queueing process and associated parameters are then presented and compared. We conclude this paper by summarizing results and considering future work.
 
 
-## Background and Literature Review
+## Background 
+
+Gabbiani and Cox [1] define a stochastic process as a collection or ensemble of random variables indexed by a variable t, usually representing time. They exist in two types - discrete-time and continuous-time stochastic processes. They are widely used as mathematical models to describe systems that occur in a random manner. The applications are vast in computer science, cryptography, telecommunication, and finance but also in biology, physics, chemistry, and neuroscience. 
+
+One of the easiest stochastic processes to understand is the Bernoulli process [2] as it only has two possible outcomes - yes/no, success/failure, 1/0, blue/red, head/tail. with probabilities of {p, 1-p}. For example, tossing a fair coin ten times can be modeled as a Bernoulli process with a sequence of ten coin-flip results and probabilities of 0.5 for head and 0.5 for tail (since it is a fair coin). Each coin-flip is a binary-valued random variable. 
+
+Another example of a stochastic process is the Poisson process which we use in this paper to estimate the number and length of the jobs in the queue. It is used in instances when we need to count the number of occurrences of an event that happens at random. In practice [3] the Poisson process is used to model the number of car accidents at a site, the location of users in a wireless network, the request for individual documents on a web server, the outbreak of wars . 
+
+The Poisson process with rate ?? is defined as [3]:
+Let ?? > 0 be fixed. The counting process {N(t), t ??? [0,???)} is called a Poisson process with rates ?? if all the following conditions hold:
+1.	N(0) = 0;
+2.	N(t) has independent increments;
+3.	the number of arrivals in any interval of length ??>0 has Poisson(????) distribution.
+
+Now, in order to estimate the number of jobs and their lengths of time we simulate different outcomes by using Monte Carlo simulations. These are used to generate random variables for modeling risk or uncertainty of a system [4]. Monte Carlo simulations have some key advantages over more deterministic analyses [5] including - the results land probabilities so they show you what could happen but also how likely it is to happen; it is easy to generate graphical representations based on the results; and one can easily spot which output has the largest effect on the bottom line results. 
+
+
+[1] Fabrizio Gabbiani, Steven James Cox, in Mathematics for Neuroscientists (Second Edition), 2017
+[2] http://www.statisticshowto.com/bernoulli-distribution/
+[3] https://www.probabilitycourse.com/chapter11/11_1_2_basic_concepts_of_the_poisson_process.php
+[4] https://economictimes.indiatimes.com/definition/monte-carlo-simulation
+[5] http://www.palisade.com/risk/monte_carlo_simulation.asp
 
 
 
