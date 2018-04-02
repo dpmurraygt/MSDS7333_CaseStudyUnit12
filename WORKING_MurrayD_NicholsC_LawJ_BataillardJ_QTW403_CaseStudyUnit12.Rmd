@@ -120,8 +120,8 @@ We selected several values for lambda and kappa with matching ratios to determin
 
 ```{r kappa_constant_trial, eval=FALSE}
 set.seed(1)
-trialKappas = c(1, 1, 1, 1, 1, 1)
 trialLambdas = c(0.1, 0.5, 1, 1.5, 2, 3)
+trialKappas = c(1, 1, 1, 1, 1, 1)
 trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
 
 # Trial Simulation for constant Kappa values
@@ -130,32 +130,16 @@ trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
 # parameter combination
 # returns a matrix with cols == number of reps, with each
 # column containing num gens and num off spring in rows
-mcTrialOutput = MCBA(params = trialParams, repeats = 50, 
-                     mG = 200, mO = 10000)
+mcTrialOutput = MCBA(params = trialParams, 
+                     repeats = 50, 
+                     mG = 200, 
+                     mO = 1000)
                      
 # save data for later use
-save(mcTrialOutput, file = "data/mcTrialOutput1.rda")
+save(mcTrialOutput, file = "data/mcOutputCase2.rda")
 ```
 
 The first sample simulation over 40 iterations for the requisite sample size was then completed.
-
-```{r kappa_constant_full,  eval=FALSE}
-# create a param grid
-lambdas = c(0.1, 0.5, 1, 1.5, 2, 3)
-kappas = c(1, 1, 1, 1, 1, 1)
-
-# expand grid results in a df, cast as matrix
-paramGrid = as.matrix(expand.grid(lambdas, kappas))
-
-pdf("BA_Scatterplot3Dkids_Kappa1.pdf", width = 7, height = 6)
-
-# sample simulation iterated over 40 times with at at most 20 levels and 1000 children
-mcGrid = MCBA(params = paramGrid, repeats = 40, mG = 20,
-                mO = 1000)
-                
-# save results for later use
-save(mcGrid1, file = "mcGridOutput1.rda")
-```
 
 From this, we then changed the values for kappa and lambda to reflect the ratios used in the first example while ensuring that kappa did not equal 1.
 
@@ -166,11 +150,13 @@ trialLambdas = c(0.5, 0.25, 0.3, 6, 1, 1.5)
 trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
 
 # trial simulation
-mcTrialOutput = MCBA(params = trialParams, repeats = 20, 
-                     mG = 200, mO = 100000)
+mcTrialOutput = MCBA(params = trialParams, 
+                     repeats = 50, 
+                     mG = 200, 
+                     mO = 1000)
 
 # save for later
-save(mcTrialOutput, file = "mcTrialOutput0.rda")
+save(mcTrialOutput, file = "data/mcOutputCase2.rda")
 ```
 
 And then the full run of 40 iterations of the simulation for our sample size.
