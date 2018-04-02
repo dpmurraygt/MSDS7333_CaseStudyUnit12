@@ -112,7 +112,7 @@ In order to investigate the relationship between lambda and kappa in our queuein
 
 ## Results
 
-## needs viz and more explanation
+## needs viz and more explanation, code done for sim
 
 We then identified several values for both lambda and kappa across both cases where kappa is kept constant at 1 and where kappa = c and does not equal 1.  These values are indicated in the table below.
 
