@@ -81,10 +81,10 @@ This model represents a branching process, the outputs of which are the number o
 The Poisson and exponential distributions allow us to parameterize our queueing process. Each distribution contains a rate parameter, which represent the number of events per unit time. Specifically, we use lambda and kappa for our rate designations for the Poisson and exponential distributions, respectively. These rate parameters can elongate or shorten the queueing process dramatically. Obviously, if a parent generates many child jobs, the probability of a process continuing is greater. Further, if a job has a longer run time, the probability of a process continuing is also greater. It is the interaction of these two parameters we are interested in analyzing. As an example, we randomly generate 5000 samples from a Poisson and exponential distribution with rate parameters of 0.25 and 1 below.
 
 Figure 1: Rate Parameter Comparisons from 5000 Randomly Generated Variables
-```{r dist_comparisons, fig.height=6, fig.width=8.5}
+```{r dist_comparisons, echo=FALSE, include=TRUE, fig.height=6, fig.width=8.5}
 
-set.seed(1)
 par(mfrow=c(2,2))
+set.seed(1)
 hist(rpois(5000, 0.25), 
      main = 'Poisson Distribution: Lambda of 0.25', 
      xlab = "Children")
@@ -101,10 +101,8 @@ plot(density(rexp(5000, 1)),
      xlab = "Lifetime", 
      ylim=c(0,0.8),
      xlim=c(0,15))
+par(mfrow=c(1,1))
 
-
-#prob0 <- dpois(x = 0:max.col(mcGrid), lambda = 2.5)
-#prob1 <- dpois(x = 0:max.col(mcGrid1), lambda = 2.5)
 ```
 
 As can be seen in Figure 1, each distribution's rate parameter can significantly change the outcome for the number of children and the lifetime for each job in our model. We seek to understand if the ratio of these parameters are of importance, or if one parameter dominates when considering the longevity of our queueing process.
@@ -114,12 +112,13 @@ In order to investigate the relationship between lambda and kappa in our queuein
 
 ## Results
 
+## needs viz and more explanation
 
 We then identified several values for both lambda and kappa across both cases where kappa is kept constant at 1 and where kappa = c and does not equal 1.  These values are indicated in the table below.
 
 We selected several values for lambda and kappa with matching ratios to determing first in the test case to see the overall patterns that would emerge from the changes, and then the simulation case, iterating over 500 times to provide a representative sample.  Our first attempt was to change the lambda while keeping kappa constant at 1 as shown below.
 
-```{r kappa_constant_1, eval=FALSE}
+```{r kappa_constant_1, echo=FALSE, include=TRUE, eval=FALSE, fig.height=8, fig.width=8.5}
 
 lambdas = c(seq(.2, 2, by = 0.2))
 kappas = c(1)
@@ -188,7 +187,7 @@ The first sample simulation over 40 iterations for the requisite sample size was
 
 From this, we then changed the values for kappa and lambda to reflect the ratios used in the first example while ensuring that kappa did not equal 1.
 
-```{r kappa_constant_2, eval=FALSE}
+```{r kappa_constant_2, echo=FALSE, include=TRUE, eval=FALSE, fig.height=8, fig.width=8.5}
 # setting simulation values for kappa and lambda, where kappa != to a constant of 1
 # book calls for lambda / constant, so simply double to keep ratios the same, test to see if we get
 # similar results visually
