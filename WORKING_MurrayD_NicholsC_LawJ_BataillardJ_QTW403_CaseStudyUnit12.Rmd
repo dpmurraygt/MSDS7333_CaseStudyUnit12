@@ -28,8 +28,8 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r make, include=FALSE, cache=TRUE, eval=FALSE}
-# get and clean data
-#source("src/make.R")
+# load relevant functions for simulation
+source("src/make.R")
 ```
 
 ## Abstract
@@ -109,7 +109,7 @@ plot(density(rexp(5000, 1)),
 
 As can be seen in Figure 1, each distribution's rate parameter can significantly change the outcome for the number of children and the lifetime for each job in our model. We seek to understand if the ratio of these parameters are of importance, or if one parameter dominates when considering the longevity of our queueing process.
 
-In order to investigate the relationship between lambda and kappa in our queueing model, we carry out a Monte Carlo simulation study by fixing kappa, which represents the parameter for the lifetime of each job, to be one. We run 400 simulations to determine the number of child jobs created using each of six values of lambda, which represents the rate parameter for the number of offspring for each parent. We then run another set of simulations where kappa is not equal to one, however, the ratio of lambda to kappa is equal to one of the lambda values from the earlier simulation where kappa was equal to one. This allows us to analyze whether the relationship between these two parameters are important or if one or more parameters dominates the longevity of our queueing process.
+In order to investigate the relationship between lambda and kappa in our queueing model, we carry out a Monte Carlo simulation study by fixing kappa, which represents the parameter for the lifetime of each job, to be one. We run 50 simulations to determine the number of child jobs created using each of six values of lambda, which represents the rate parameter for the number of offspring for each parent. We then run another set of simulations where kappa is not equal to one, however, the ratio of lambda to kappa is equal to one of the lambda values from the earlier simulation where kappa was equal to one. This allows us to analyze whether the relationship between these two parameters are important or if one or more parameters dominates the longevity of our queueing process.
 
 ## Results
 
@@ -119,6 +119,7 @@ We then identified several values for both lambda and kappa across both cases wh
 We selected several values for lambda and kappa with matching ratios to determing first in the test case to see the overall patterns that would emerge from the changes, and then the simulation case, iterating over 40 times to provide a representative sample.  Our first attempt was to change the lambda while keeping kappa constant at 1 as shown below.
 
 ```{r kappa_constant_trial, eval=FALSE}
+set.seed(1)
 trialKappas = c(1, 1, 1, 1, 1, 1)
 trialLambdas = c(0.1, 0.5, 1, 1.5, 2, 3)
 trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
@@ -129,11 +130,11 @@ trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
 # parameter combination
 # returns a matrix with cols == number of reps, with each
 # column containing num gens and num off spring in rows
-mcTrialOutput = MCBA(params = trialParams, repeats = 20, 
-                     mG = 200, mO = 100000)
+mcTrialOutput = MCBA(params = trialParams, repeats = 50, 
+                     mG = 200, mO = 10000)
                      
 # save data for later use
-save(mcTrialOutput, file = "mcTrialOutput1.rda")
+save(mcTrialOutput, file = "data/mcTrialOutput1.rda")
 ```
 
 The first sample simulation over 40 iterations for the requisite sample size was then completed.
@@ -155,6 +156,7 @@ mcGrid = MCBA(params = paramGrid, repeats = 40, mG = 20,
 # save results for later use
 save(mcGrid1, file = "mcGridOutput1.rda")
 ```
+
 From this, we then changed the values for kappa and lambda to reflect the ratios used in the first example while ensuring that kappa did not equal 1.
 
 ```{r kappa_not_trial, eval=FALSE}
@@ -226,122 +228,8 @@ The use of the simulation can be used to identified bottlenecks in the process.[
 9. https://www.qualitymag.com/articles/91769-monte-carlo-and-manufacturing
 
 ## APPENDIX - BOOK CODE
-```{r book_code,  eval=FALSE}
 
-# only dropped in what we need for any of the questions, even some
-# of this is a bit redundant
-
-# vector generate children in BA process
-genKidsV = function(bTimes, cTimes, parentID, lambda = 0.5, kappa = 0.3) {
-  # Determine how many children each job has
-  parentAge = cTimes - bTimes
-  # get interarrival times (births)
-  numKids = rpois(n = length(parentAge), lambda = lambda * parentAge)
-  # if for some reason no children, return NULL
-  if (sum(numKids) == 0) return(NULL)
-  
-  # Determine the birth times of the children  
-  # use mapply because runif not vectorizable
-  # pass in vectors of numKids, birthTimes and completeTimes
-  kidStats = 
-    mapply(function(n, min, max) {
-      # get birth times for number of kids as part of uniform dist.
-      # sort them ascending
-      births = sort(runif(n, min, max))
-      # get lifetimes as exponential
-      runtimes = rexp(n, rate = kappa)
-      # add it to parent's complete time (max)
-      completes = rep(max, n) + runtimes
-      # wrap it in a df
-      data.frame(births, completes)
-    },
-           n = numKids , min = bTimes, max = cTimes, 
-           SIMPLIFY = FALSE)
-  
- # return IDs for parents, kids, births and completes
-  return(data.frame(parentID = rep(parentID, numKids),
-                    kidID = 1:sum(numKids), 
-                    births = unlist(lapply(kidStats, "[[", "births")), 
-                    completes = unlist(lapply(kidStats,"[[", "completes"))
-                    ))
-}
-
-# use familyTree with maxGen and maxOffspring params
-# this function grows a tree instead of applying directly
-# to genKidsV
-familyTree = function(lambda = 0.5, kappa = 0.3, 
-                      maxGen = 10, maxOffspring = 1000) {
-
-  # Return value - a list with 1 data frame per generation.
-  allGens = vector(mode = "list", length = maxGen)
-  
-  # Generate root of the tree
-  allGens[[1]] = data.frame(parentID = NA, kidID = 1, 
-                            births = 0, # parent is born at 0
-                            completes = rexp(1, rate = kappa)) # parent complete 
-  
-  # sentry for number of offspring
-  currentNumOffspring = 0
-
-  # Generate future generations, one at a time.
-  for (i in 2:maxGen) {
-    nextGen = genKidsV(bTimes = allGens[[ (i - 1) ]]$births, # pass vector of births
-                       cTimes = allGens[[ (i - 1) ]]$completes, # pass vector of completes
-                       parentID = allGens[[ (i - 1) ]]$kidID, # pass kidID from prev
-                       lambda = lambda, kappa = kappa) # lambda and kappas for kids and lifetimes
-    
-    # if nextGen DF is null, return all before current
-    if (is.null(nextGen)) return(allGens[ 1:(i - 1) ]) 
-    # else append this generation to the list
-    allGens[[ i ]] = nextGen
-    # increment sentry var
-    currentNumOffspring = currentNumOffspring + nrow(nextGen)
-    # stopping condition for number of offspring
-    if (currentNumOffspring > maxOffspring) 
-      return(allGens[1:i])
-  }  
-  allGens
-}
-
-
-# iterates over each generation to get num rows
-# takes length of entire df to agg num gens
-exptOne = function(l, k, mG, mO){
-  # Helper function to call familyTree
-  # Returns - summary statistics for analysis,
-  
-  aTree = familyTree(lambda = l, kappa = k, maxGen = mG,
-                      maxOffspring = mO)
-  numGen = length(aTree)
-  numJobs = sum(sapply(aTree, nrow))
-  c(numGen, numJobs)
-}
-
-
-
-# MCBA takes a parameter matrix to iterate over
-# it also implements a repeat for monte carlo sims per
-# parameter combination
-# returns a matrix with cols == number of reps, with each
-# column containing num gens and num off spring in rows
-MCBA = function(params, repeats = 5, mG = 10, mO = 1000){
-  # params: matrix columns of lambda and kappa values
-  # For each lambda and kappa pair, run "repeats" times
-  
-  n = nrow(params)
-  mcResults = vector("list", length = n)
-  
-  for (i in 1:n) {
-    cat("param set is ", i, "\n")
-    mcResults[[i]] = replicate(repeats,
-                               exptOne(l = params[i, 1],
-                                       k = params[i, 2],
-                                       mG = mG, 
-                                       mO = mO))
-  }
-  mcResults
-}
-
+```{r book_code_and_viz_scratch,  eval=FALSE}
 
 # basic simulation
 trialKappas = c(0.1, 10, 0.1, 10)
@@ -460,8 +348,7 @@ legend(x = 0.1, y = 3.25, legend = midBreaks, fill = colors,
 par(oldPar)
 
 ```
-```{r extra_viz,  eval=FALSE}
-
+```{r extra_viz_scratch,  eval=FALSE}
 
 set.seed(seed1)
 tree = familyTree(lambda = 0.4, 
