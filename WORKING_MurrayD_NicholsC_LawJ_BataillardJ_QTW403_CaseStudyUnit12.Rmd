@@ -78,11 +78,95 @@ Now, in order to estimate the number of jobs and their lengths of time we simula
 
 ## Methods
 
-## started this on accident as I was typing, made more sense here. This is not done so please continue or replace. 
-
 In order to anticipate job counts for our queueing example, we need to identify a method to model the previously described queue forming process. Given each job has a fixed lifetime and we are interested in the number of child jobs each parent job generates, we use a Poisson process to count the number of jobs. Given we view each job over a fixed interval of time, we can use the Poission distribution to estimate the number of jobs each parent generates. Additionally, each job runs for a certain amount of time. We can generate these run times using a random variable from the exponential distribution to determine the lifetime of each job.
 
+```{r poisson process for each job}
+prob0 <- dpois(x = 0:max.col(mcGrid), lambda = 2.5)
+prob1 <- dpois(x = 0:max.col(mcGrid1), lambda = 2.5)
+```
+
+We then identified several values for both lambda and kappa across both cases where kappa is kept constant at 1 and where kappa = c and does not equal 1.  These values are indicated in the table below.
+
+We selected several values for lambda and kappa with matching ratios to determing first in the test case to see the overall patterns that would emerge from the changes, and then the simulation case, iterating over 40 times to provide a representative sample.  Our first attempt was to change the lambda while keeping kappa constant at 1 as shown below.
+
+```{r kappa_constant_trial}
+trialKappas = c(1, 1, 1, 1, 1, 1)
+trialLambdas = c(0.1, 0.5, 1, 1.5, 2, 3)
+trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
+
+# Trial Simulation for constant Kappa values
+# MCBA takes a parameter matrix to iterate over
+# it also implements a repeat for monte carlo sims per
+# parameter combination
+# returns a matrix with cols == number of reps, with each
+# column containing num gens and num off spring in rows
+mcTrialOutput = MCBA(params = trialParams, repeats = 20, 
+                     mG = 200, mO = 100000)
+                     
+# save data for later use
+save(mcTrialOutput, file = "mcTrialOutput1.rda")
+```
+
+The first sample simulation over 40 iterations for the requisite sample size was then completed.
+
+```{r kappa_constant_full}
+# create a param grid
+lambdas = c(0.1, 0.5, 1, 1.5, 2, 3)
+kappas = c(1, 1, 1, 1, 1, 1)
+
+# expand grid results in a df, cast as matrix
+paramGrid = as.matrix(expand.grid(lambdas, kappas))
+
+pdf("BA_Scatterplot3Dkids_Kappa1.pdf", width = 7, height = 6)
+
+# sample simulation iterated over 40 times with at at most 20 levels and 1000 children
+mcGrid = MCBA(params = paramGrid, repeats = 40, mG = 20,
+                mO = 1000)
+                
+# save results for later use
+save(mcGrid1, file = "mcGridOutput1.rda")
+```
+From this, we then changed the values for kappa and lambda to reflect the ratios used in the first example while ensuring that kappa did not equal 1.
+
+```{r kappa_not_trial}
+# setting trial simulation values for kappa and lambda, where kappa != 1
+trialKappas = c(5, 0.5, 0.3, 4, 0.5, 0.3)
+trialLambdas = c(0.5, 0.25, 0.3, 6, 1, 1.5)
+trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
+
+# trial simulation
+mcTrialOutput = MCBA(params = trialParams, repeats = 20, 
+                     mG = 200, mO = 100000)
+
+# save for later
+save(mcTrialOutput, file = "mcTrialOutput0.rda")
+```
+
+And then the full run of 40 iterations of the simulation for our sample size.
+
+```{r kappa_not_full}
+# create a param grid
+lambdas = c(seq(0.1, 0.6, by = 0.1), seq(0.8, 2, by = 0.2), 
+            seq(2.25, 3, by = 0.25))
+kappas = c(seq(0.1, 0.9, by = 0.1), seq(1.2, 2, by = 0.2),
+           seq(2.25, 5, by = 0.25))
+           
+# expand grid results in a df, cast as matrix
+paramGrid = as.matrix(expand.grid(lambdas, kappas))
+
+pdf("BA_Scatterplot3Dkids_KappaNot1.pdf", width = 7, height = 6)
+
+# full sample simulation iterated over 40 times
+mcGrid = MCBA(params = paramGrid, repeats = 40, mG = 20,
+                mO = 1000)
+
+# save results for later use
+save(mcGrid, file = "mcGridOutput0.rda")
+```
+
 ## Results
+
+
 
 ## Conclusions and Future Work
 
