@@ -243,23 +243,25 @@ The use of the simulation can be used to identified bottlenecks in the process.[
 
 
 ## References
-1. NTL Book
+1. Nolan, D., Temple Lang, D. DATA SCIENCE IN R: a Case Studies Approach to Computational Reasoning and Problem Solving. CRC PRESS, 2017.
 
-2. Fabrizio Gabbiani, Steven James Cox, in Mathematics for Neuroscientists (Second Edition), 2017
+2. F. Gabbiani, S. Cox. "Mathematics for Neuroscientists"" (Second Edition). 2017.
 
-3. http://www.statisticshowto.com/bernoulli-distribution/
+3.“Bernoulli Distribution: Definition and Examples.” Statistics How To, 29 July 2016. www.statisticshowto.com/bernoulli-distribution/.
 
-4. https://www.probabilitycourse.com/chapter11/11_1_2_basic_concepts_of_the_poisson_process.php
+4. H. Pishro-Nik. "Basic Concepts of the Poisson Process." Probability Course. https://www.probabilitycourse.com/chapter11/11_1_2_basic_concepts_of_the_poisson_process.php
 
-5. https://economictimes.indiatimes.com/definition/monte-carlo-simulation
+5. "Definition of Monte Carlo Simumation." The Economic Times. https://economictimes.indiatimes.com/definition/monte-carlo-simulation
 
-6. http://www.palisade.com/risk/monte_carlo_simulation.asp
+6. "Monte Carlo Simulation." Palisade, 2018.
+http://www.palisade.com/risk/monte_carlo_simulation.asp
 
-7. https://fivethirtyeight.com/features/how-our-club-soccer-projections-work/
+7. Boice, J. "How Our Soccer Projections Work." FiveThirtyEight, 19 Jan 2017. https://fivethirtyeight.com/features/how-our-club-soccer-projections-work/
 
-8. https://www.sciencedirect.com/science/article/pii/S0168160509006680
+8. Smid, J. et al. "Strengths and weaknesses of Monte Carlo simulation models and Bayesian belief networks in microbial risk assessment." ScienceDirect, 30 May 2010. https://www.sciencedirect.com/science/article/pii/S0168160509006680
 
-9. https://www.qualitymag.com/articles/91769-monte-carlo-and-manufacturing
+9. Heffernan, R. "Monte Carlo and Manufacturing." Quality Magazine, 1 April 2014.
+https://www.qualitymag.com/articles/91769-monte-carlo-and-manufacturing
 
 ## APPENDIX - BOOK CODE
 
