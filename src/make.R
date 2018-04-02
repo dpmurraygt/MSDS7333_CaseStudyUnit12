@@ -61,7 +61,8 @@ familyTree = function(lambda = 0.5, kappa = 0.3,
     nextGen = genKidsV(bTimes = allGens[[ (i - 1) ]]$births, # pass vector of births
                        cTimes = allGens[[ (i - 1) ]]$completes, # pass vector of completes
                        parentID = allGens[[ (i - 1) ]]$kidID, # pass kidID from prev
-                       lambda = lambda, kappa = kappa) # lambda and kappas for kids and lifetimes
+                       lambda = lambda, 
+                       kappa = kappa) # lambda and kappas for kids and lifetimes
     
     # if nextGen DF is null, return all before current
     if (is.null(nextGen)) return(allGens[ 1:(i - 1) ]) 
@@ -97,6 +98,7 @@ exptOne = function(l, k, mG, mO){
 # parameter combination
 # returns a matrix with cols == number of reps, with each
 # column containing num gens and num off spring in rows
+
 MCBA = function(params, repeats = 5, mG = 10, mO = 1000){
   # params: matrix columns of lambda and kappa values
   # For each lambda and kappa pair, run "repeats" times

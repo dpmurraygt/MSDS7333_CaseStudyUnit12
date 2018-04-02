@@ -69,14 +69,14 @@ Modeling a random process given only a few samples of that respective process ca
 
 We must identify a method to model the previously described queue forming process in order to analyze many random outcomes given a set of distribution parameters. Our model assumptions are as follows:
 
-1. The queueing process begins with a single parent
+1. The queueing process begins with a single parent job
 2. This parent (and all subsequent parents) have a randomly generated run time or "lifetime"
 3. Each parent can randomly generate n amount of children jobs
 4. All child jobs are "protected" and do not run until their parent job completes or "dies"
 5. Each child can spawn n amount of child jobs
 6. The process runs until no additional children are generated or infinitely
 
-Starting with the parent, each job has a fixed lifetime that is determined randomly. Within this fixed interval of time, a parent can generate n amount of child jobs. Thus, we can use a Poisson process to model the counts of jobs over each fixed time interval. Specifically, we use the Poission distribution to randomly generate the number of children for each parent. Finally, each job runs for a certain amount of time and defines the time boundaries between different events. We can randomly generate these run times using a random variable from the exponential distribution to determine the lifetime of each job.
+This model represents a branching process, the outputs of which are the number of generations and the number of offspring in a family tree of jobs. Starting with the parent, each job has a fixed lifetime that is determined randomly. Within this fixed interval of time, a parent can generate *n* amount of child jobs. Thus, we can use a Poisson process to model the counts of jobs over each fixed time interval. Specifically, we use the Poission distribution to randomly generate the number of children for each parent given a rate parameter. Finally, each job runs for a certain amount of time, defining the time boundaries between parent end and child start times. We can randomly generate these run times using a random variable from the exponential distribution to determine the lifetime of each job. What results is a family tree with distinct generations containing *n* number of children. We can subsequently count these generations and the number of jobs to determine the longevity of our queueing process.
 
 The Poisson and exponential distributions allow us to parameterize our queueing process. Each distribution contains a rate parameter, which represent the number of events per unit time. Specifically, we use lambda and kappa for our rate designations for the Poisson and exponential distributions, respectively. These rate parameters can elongate or shorten the queueing process dramatically. Obviously, if a parent generates many child jobs, the probability of a process continuing is greater. Further, if a job has a longer run time, the probability of a process continuing is also greater. It is the interaction of these two parameters we are interested in analyzing. As an example, we randomly generate 5000 samples from a Poisson and exponential distribution with rate parameters of 0.25 and 1 below.
 
@@ -109,77 +109,126 @@ plot(density(rexp(5000, 1)),
 
 As can be seen in Figure 1, each distribution's rate parameter can significantly change the outcome for the number of children and the lifetime for each job in our model. We seek to understand if the ratio of these parameters are of importance, or if one parameter dominates when considering the longevity of our queueing process.
 
-In order to investigate the relationship between lambda and kappa in our queueing model, we carry out a Monte Carlo simulation study by fixing kappa, which represents the parameter for the lifetime of each job, to be one. We run 50 simulations to determine the number of child jobs created using each of six values of lambda, which represents the rate parameter for the number of offspring for each parent. We then run another set of simulations where kappa is not equal to one, however, the ratio of lambda to kappa is equal to one of the lambda values from the earlier simulation where kappa was equal to one. This allows us to analyze whether the relationship between these two parameters are important or if one or more parameters dominates the longevity of our queueing process.
+In order to investigate the relationship between lambda and kappa in our queueing model, we carry out a Monte Carlo simulation study by fixing kappa, which represents the parameter for the lifetime of each job, to be one. We run 500 simulations to determine the number of child jobs created using each of ten increasing values of lambda, which represents the rate parameter for the number of offspring for each parent. We then run another set of simulations where kappa is not equal to one, however, the ratio of lambda to kappa is equal to one of the lambda values from the earlier simulation where kappa was equal to one. This allows us to analyze whether the relationship between these two parameters are important or if one or more parameters dominates the longevity of our queueing process.
+
 
 ## Results
 
 
 We then identified several values for both lambda and kappa across both cases where kappa is kept constant at 1 and where kappa = c and does not equal 1.  These values are indicated in the table below.
 
-We selected several values for lambda and kappa with matching ratios to determing first in the test case to see the overall patterns that would emerge from the changes, and then the simulation case, iterating over 40 times to provide a representative sample.  Our first attempt was to change the lambda while keeping kappa constant at 1 as shown below.
+We selected several values for lambda and kappa with matching ratios to determing first in the test case to see the overall patterns that would emerge from the changes, and then the simulation case, iterating over 500 times to provide a representative sample.  Our first attempt was to change the lambda while keeping kappa constant at 1 as shown below.
 
-```{r kappa_constant_trial, eval=FALSE}
-set.seed(1)
-trialLambdas = c(0.1, 0.5, 1, 1.5, 2, 3)
-trialKappas = c(1, 1, 1, 1, 1, 1)
-trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
+```{r kappa_constant_1, eval=FALSE}
 
-# Trial Simulation for constant Kappa values
+lambdas = c(seq(.2, 2, by = 0.2))
+kappas = c(1)
+# matrix of parameter vals to pass to monte carlo
+paramGrid = as.matrix(expand.grid(lambdas, kappas))
+
+# Simulation for constant Kappa values == 1
 # MCBA takes a parameter matrix to iterate over
 # it also implements a repeat for monte carlo sims per
 # parameter combination
 # returns a matrix with cols == number of reps, with each
 # column containing num gens and num off spring in rows
-mcTrialOutput = MCBA(params = trialParams, 
-                     repeats = 50, 
-                     mG = 200, 
-                     mO = 1000)
+
+set.seed(1)
+mcOutputK1 = MCBA(params = paramGrid, 
+                     repeats = 500, # number of repeats
+                     mG = 20, # max number of generations
+                     mO = 1000) # maximum number of offpspring
                      
 # save data for later use
-save(mcTrialOutput, file = "data/mcOutputCase2.rda")
+save(mcOutputK1, file = "data/mcOutputK1.rda")
+
+
+# VIZ STUFF
+# useful for results? put into a grid of boxes
+invisible(mapply(function(oneSet, lambda, kappa) {
+  plot(x = oneSet[2,], y = jitter(oneSet[1, ], 1), log = "x",
+       ylim = c(1,20), xlim = c(1, 10^7), pch = 19, cex = 0.6,
+       xlab = "num offspring", ylab = "jittered generations1")
+  text(x = 50, y = 15, bquote(paste(lambda == .(lambda))) )
+  text(x = 300, y = 15, bquote(paste(kappa == .(kappa))) )
+  
+  }, 
+  mcOutputK1, lambda = lambdas, kappa = kappas,
+  SIMPLIFY = TRUE))
+# notice that lambda == 0.2, jobs die off before end
+# see if this stays the same when we double and test ratio....
+
+
+
+# viz - upper quartile of complete times - this is probably overkill considering
+# we can just use a bar or line given we dont have an increasing kappa....
+logUQkids = sapply(mcTrialOutput, function(x) 
+               log(quantile(x[2, ], probs = 0.75), base = 10))
+
+UQCut = cut(logUQkids, breaks = c(-0.1, 0.5, 2, max(logUQkids)) )
+# get colors for each cut cat
+color3 = c("#b3cde3aa", "#8856a7aa", "#810f7caa")
+colors = color3[UQCut] # map colors to each upper quartile cut
+
+# 3D plot upper quartiles
+library(scatterplot3d)
+sdp = scatterplot3d(x = trialLambdas, y = trialKappas, 
+                    z = logUQkids, pch = 15, color = colors,
+                    xlab = "Lambda", ylab = "Kappa",
+                    zlab = "Upper Quartile Offspring",
+                    angle = 120, type="h")
+
+legend("left", inset = .08, bty = "n", cex = 0.8,
+       legend = c("[0, 0.5)", "[0.5, 2)", "[2, 5)"), 
+       fill = color3)
+
 ```
 
 The first sample simulation over 40 iterations for the requisite sample size was then completed.
 
 From this, we then changed the values for kappa and lambda to reflect the ratios used in the first example while ensuring that kappa did not equal 1.
 
-```{r kappa_not_trial, eval=FALSE}
-# setting trial simulation values for kappa and lambda, where kappa != 1
-trialKappas = c(5, 0.5, 0.3, 4, 0.5, 0.3)
-trialLambdas = c(0.5, 0.25, 0.3, 6, 1, 1.5)
-trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
+```{r kappa_constant_2, eval=FALSE}
+# setting simulation values for kappa and lambda, where kappa != to a constant of 1
+# book calls for lambda / constant, so simply double to keep ratios the same, test to see if we get
+# similar results visually
+# we must keep Kappa constant here but != 1, simply double, test to see if simulations stay roughly same
+# must ensure that the l/k rate is similar to l from previous sim as well, doubling is easiest here.
+# testing to see if the ratio keeps these simulations roughly constant or if they differ
+# expect constant
 
-# trial simulation
-mcTrialOutput = MCBA(params = trialParams, 
-                     repeats = 50, 
-                     mG = 200, 
+lambdas2 = lambdas*2
+kappas2 = kappas*2
+paramGrid = as.matrix(expand.grid(lambdas2, kappas2))
+
+set.seed(1)
+# simulation with doubled params
+mcOutputK2 = MCBA(params = paramGrid, 
+                     repeats = 500, 
+                     mG = 20, 
                      mO = 1000)
 
 # save for later
-save(mcTrialOutput, file = "data/mcOutputCase2.rda")
+save(mcOutputK2, file = "data/mcOutputK2.rda")
+
+
+# VIZ STUFF
+invisible(mapply(function(oneSet, lambda, kappa) {
+  plot(x = oneSet[2,], y = jitter(oneSet[1, ], 1), log = "x",
+       ylim = c(1,20), xlim = c(1, 10^7), pch = 19, cex = 0.6,
+       xlab = "num offspring", ylab = "jittered generations1")
+  text(x = 50, y = 15, bquote(paste(lambda == .(lambda))) )
+  text(x = 300, y = 15, bquote(paste(kappa == .(kappa))) )
+  
+  }, 
+  mcOutputK2, lambda = lambdas2, kappa = kappas2,
+  SIMPLIFY = TRUE))
+# yep, ratio prevails. Jobs die out @ 0.4 lambda
+# plot it up a bit more and conclude
+
 ```
 
 And then the full run of 40 iterations of the simulation for our sample size.
-
-```{r kappa_not_full,  eval=FALSE}
-# create a param grid
-lambdas = c(seq(0.1, 0.6, by = 0.1), seq(0.8, 2, by = 0.2), 
-            seq(2.25, 3, by = 0.25))
-kappas = c(seq(0.1, 0.9, by = 0.1), seq(1.2, 2, by = 0.2),
-           seq(2.25, 5, by = 0.25))
-           
-# expand grid results in a df, cast as matrix
-paramGrid = as.matrix(expand.grid(lambdas, kappas))
-
-pdf("BA_Scatterplot3Dkids_KappaNot1.pdf", width = 7, height = 6)
-
-# full sample simulation iterated over 40 times
-mcGrid = MCBA(params = paramGrid, repeats = 40, mG = 20,
-                mO = 1000)
-
-# save results for later use
-save(mcGrid, file = "mcGridOutput0.rda")
-```
 
 
 ## Conclusions and Future Work
@@ -221,8 +270,10 @@ The use of the simulation can be used to identified bottlenecks in the process.[
 trialKappas = c(0.1, 10, 0.1, 10)
 trialLambdas = c(0.1, 0.1, 10, 10)
 trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
-mcTrialOutput = MCBA(params = trialParams, repeats = 100, 
-                     mG = 200, mO = 1000)
+mcTrialOutput = MCBA(params = trialParams, 
+                     repeats = 100, 
+                     mG = 200, 
+                     mO = 1000)
 
 #save(mcTrialOutput, file = "mcTrialOutput.rda")
 
