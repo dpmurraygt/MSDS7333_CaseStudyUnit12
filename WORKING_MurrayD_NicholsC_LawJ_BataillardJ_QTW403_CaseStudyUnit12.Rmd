@@ -32,7 +32,6 @@ knitr::opts_chunk$set(echo = FALSE)
 #source("src/make.R")
 ```
 
-
 ## Abstract
 
 Monte Carlo simulation is an extremely useful method to analyze complex mathematical relationships. When used to investigate a stochastic process, Monte Carlo simulation allows a researcher to analyze thousands of independent random outcomes given underlying distributional assumptions. In this paper, we model computer job queueing as a Poisson process. We use a Poisson distribution to estimate the number of jobs and an exponential distribution to estimate the lifetime of each respective job. We investigate the number of jobs created given these assumptions by simulating outcomes using different values of the Poisson lambda and exponential rate parameters. We find that the ratio of the two distribution parameters is more important than two discrete values in determining the number of jobs created. Thus, simulation parameters can be simplified to use only the ratio of the two parameters instead of iterating over hundreds of combinations.
@@ -82,7 +81,7 @@ Starting with the parent, each job has a fixed lifetime that is determined rando
 The Poisson and exponential distributions allow us to parameterize our queueing process. Each distribution contains a rate parameter, which represent the number of events per unit time. Specifically, we use lambda and kappa for our rate designations for the Poisson and exponential distributions, respectively. These rate parameters can elongate or shorten the queueing process dramatically. Obviously, if a parent generates many child jobs, the probability of a process continuing is greater. Further, if a job has a longer run time, the probability of a process continuing is also greater. It is the interaction of these two parameters we are interested in analyzing. As an example, we randomly generate 5000 samples from a Poisson and exponential distribution with rate parameters of 0.25 and 1 below.
 
 Figure 1: Rate Parameter Comparisons from 5000 Randomly Generated Variables
-```{r dist_comparisons, eval=FALSE}
+```{r dist_comparisons, fig.height=6, fig.width=8.5}
 
 set.seed(1)
 par(mfrow=c(2,2))
@@ -110,7 +109,7 @@ plot(density(rexp(5000, 1)),
 
 As can be seen in Figure 1, each distribution's rate parameter can significantly change the outcome for the number of children and the lifetime for each job in our model. We seek to understand if the ratio of these parameters are of importance, or if one parameter dominates when considering the longevity of our queueing process.
 
-In order to investigate the relationship between lambda and kappa in our model, we carry out a simulation study, fixing kappa, which represents the parameter for the lifetime of each job, to be one. We run 400 Monte Carlo simulations to determine the number of child jobs created using each of six values of lambda, which represents the rate parameter for the number of offspring for each parent. We then run another set of simulations where kappa is not equal to one, however, the ratio of lambda to kappa is equal to one of the lambda values from the earlier simulation where kappa was equal to one. This allows us to analyze whether the relationship between these two parameters are important or if one or more parameters dominates the longevity of our queueing process.
+In order to investigate the relationship between lambda and kappa in our queueing model, we carry out a Monte Carlo simulation study by fixing kappa, which represents the parameter for the lifetime of each job, to be one. We run 400 simulations to determine the number of child jobs created using each of six values of lambda, which represents the rate parameter for the number of offspring for each parent. We then run another set of simulations where kappa is not equal to one, however, the ratio of lambda to kappa is equal to one of the lambda values from the earlier simulation where kappa was equal to one. This allows us to analyze whether the relationship between these two parameters are important or if one or more parameters dominates the longevity of our queueing process.
 
 ## Results
 
