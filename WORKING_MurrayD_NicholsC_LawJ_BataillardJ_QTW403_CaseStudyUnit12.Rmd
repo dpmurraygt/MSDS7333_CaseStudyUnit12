@@ -3,9 +3,9 @@ title: 'Branching Processes: Simulating Birth and Assassinations .... update thi
 author: "Dennis Murray, Jared Law, Julien Bataillard, Cory Nichols"
 date: "April 3rd, 2018"
 output:
-  pdf_document: default
   word_document:
     fig_caption: yes
+  pdf_document: default
 section: MSDS 7333-403 - Quantifying the World - Case Study 6 (Unit 12)
 ---
 
@@ -40,32 +40,32 @@ Monte Carlo simulation is an extremely useful method to analyze complex mathemat
 
 ## Introduction
 
-In the context of software engineering, it is often good practice to anticipate the likelihood of a release date, the cost of a project, or the impact of implementing new code base. These types of exercises usually fall into the category of risk analysis. However, it is often extremely difficult to successfully identify or anticipate outcomes if those outcomes are considered mostly random. One such software engineering example proudcing random outcomes is computer job queueing. 
+In the context of software engineering, it is good practice to anticipate the likelihood of a release date, the cost of a project, or the impact of implementing new code base. These types of exercises usually fall into the category of risk analysis. However, it is often extremely difficult to successfully identify or anticipate outcomes if those outcomes are considered mostly random. One such software engineering example proudcing random outcomes is computer job queueing. 
 
-Even with parallel processing, a queue of interdependent tasks can form, often slowing down processing time. The number of these tasks can be completely random, specifically when considering the amount and type of requests the computer must consider. Typically, a parent job generates children which then generate more children. Additionally, each one of these child jobs have a particular lifetime or run time and can generate additional child jobs. Each job ultimately depends on the completion of prior tasks, causing a slow down in processing time. 
+Even with parallel processing, a queue of interdependent tasks can form, often slowing down processing time (NTL 1). The number of these tasks can be completely random, specifically when considering the amount and type of requests the computer must consider. Typically, a parent job generates children which then generate additional children recursively. Each one of these jobs have a distinct run time that begins after the completion of their respective parent job. Obviously, this queueing process can result in significant slow down times, therefore it is often useful to simulate the outcomes of this branching process to optimize code and job processing logic.
 
-In order to model the queueing process we must utilize probability distributions to estimate the number of jobs created and their associated lifetimes. Given the randomness of the queueing process, we explore many different outcomes utilizing these probability distributions via Monte Carlo simulation. These simulations allow us to explore the distributions of job counts our queue model produces.
+In order to model the queueing process, we must utilize probability distributions to estimate the number of jobs created and their associated lifetimes. Given the randomness of the queueing process, we explore many different outcomes utilizing these probability distributions via Monte Carlo simulation. These simulations allow us to explore the distributions of job counts our queue model produces.
 
-Of particular importance are the associated distributional parameters that must be identified as part of our simulation analysis. Our objective is to determine if these parameters and their values are related to the longevity of the queueing process. Specifically, we investigate whether discrete parameter values or the ratio of the two parameters is more important to the longevity of the queueing process.
+Of particular importance are the associated distributional parameters that must be identified as part of our simulation analysis. Our objective in this paper is to determine if these parameters and their values are related to the longevity of the queueing process. Specifically, we investigate whether discrete parameter values or the ratio of the two parameters is more important to the longevity of the queueing process.
 
 In the following section, we review academic literature on stochastic processes and Monte Carlo simulation. In the methods section, we provide a description of the probability distribution assumptions used to model the CPU queueing process. We also identify the parameter selections and logic used to test the sensitivity of our model given the distributional parameters. Results of Monte Carlo simulation for the queueing process and associated parameters are then presented and compared. We conclude this paper by summarizing results and considering future work.
 
 
 ## Background 
 
-Gabbiani and Cox [1] define a stochastic process as a collection or ensemble of random variables indexed by a variable t, usually representing time. They exist in two types - discrete-time and continuous-time stochastic processes. They are widely used as mathematical models to describe systems that occur in a random manner. The applications are vast in computer science, cryptography, telecommunication, and finance but also in biology, physics, chemistry, and neuroscience. 
+Gabbiani and Cox (2) define a stochastic process as a collection of random variables indexed by a variable t, usually representing time. These processes are grouped into two categories: discrete-time and continuous-time stochastic processes. They are studied intensely as part of mathematical models to describe systems that occur in a random manner. The applications of these models can be found in computer science, cryptography, telecommunication, finance and many other academic disciplines and industries.
 
-One of the easiest stochastic processes to understand is the Bernoulli process [2] as it only has two possible outcomes - yes/no, success/failure, 1/0, blue/red, head/tail. with probabilities of {p, 1-p}. For example, tossing a fair coin ten times can be modeled as a Bernoulli process with a sequence of ten coin-flip results and probabilities of 0.5 for head and 0.5 for tail (since it is a fair coin). Each coin-flip is a binary-valued random variable. 
+One of the easiest stochastic processes to understand is the Bernoulli process (3) as it only has two possible outcomes: success or failure, given probabilities of {p, 1-p}. For example, tossing a fair coin ten times can be modeled as a Bernoulli process with a sequence of ten coin-flip results and probabilities of 0.5 for head and 0.5 for tail (since it is a fair coin). Each coin-flip is a binary-valued random variable. 
 
-Another example of a stochastic process is the Poisson process which we use in this paper to estimate the number and length of the jobs in the queue. It is used in instances when we need to count the number of occurrences of an event that happens at random. In practice [3] the Poisson process is used to model the number of car accidents at a site, the location of users in a wireless network, the request for individual documents on a web server, the outbreak of wars . 
+Another example of a stochastic process is the Poisson process which we use in this paper to estimate the number and length of the jobs in queueing process. It is used in instances when we need to count the number of occurrences of an event that happens at random. In practice [3] the Poisson process is used to model the number of car accidents at a site, the location of users in a wireless network, the request for individual documents on a web server and the outbreak of wars. 
 
-The Poisson process with rate ?? is defined as [3]:
-Let ?? > 0 be fixed. The counting process {N(t), t ??? [0,???)} is called a Poisson process with rates ?? if all the following conditions hold:
+The Poisson process with rate $\lambda$ is defined as [3]:
+Let $\lambda$ > 0 be fixed. The counting process {N(t), t $\elementof$ [0,???)} is called a Poisson process with rate $\lambda$ if all the following conditions hold:
 1.	N(0) = 0;
 2.	N(t) has independent increments;
 3.	the number of arrivals in any interval of length ??>0 has Poisson(????) distribution.
 
-Now, in order to estimate the number of jobs and their lengths of time we simulate different outcomes by using Monte Carlo simulations. These are used to generate random variables for modeling risk or uncertainty of a system [4]. Monte Carlo simulations have some key advantages over more deterministic analyses [5] including - the results land probabilities so they show you what could happen but also how likely it is to happen; it is easy to generate graphical representations based on the results; and one can easily spot which output has the largest effect on the bottom line results. 
+In order to estimate the number of jobs and their lengths of time we simulate different outcomes by using Monte Carlo simulations. These are used to generate random variables for modeling risk or uncertainty of a system [4]. Monte Carlo simulations have some key advantages over more deterministic analyses [5] including - the results land probabilities so they show you what could happen but also how likely it is to happen; it is easy to generate graphical representations based on the results; and one can easily spot which output has the largest effect on the bottom line results. 
 
 
 [1] Fabrizio Gabbiani, Steven James Cox, in Mathematics for Neuroscientists (Second Edition), 2017
@@ -78,9 +78,9 @@ Now, in order to estimate the number of jobs and their lengths of time we simula
 
 ## Methods
 
-In order to anticipate job counts for our queueing example, we need to identify a method to model the previously described queue forming process. Given each job has a fixed lifetime and we are interested in the number of child jobs each parent job generates, we use a Poisson process to count the number of jobs. Given we view each job over a fixed interval of time, we can use the Poission distribution to estimate the number of jobs each parent generates. Additionally, each job runs for a certain amount of time. We can generate these run times using a random variable from the exponential distribution to determine the lifetime of each job.
+In order to anticipate job counts for our queueing example, we need to identify a method to model the previously described queue forming process. Given each job has a fixed lifetime and we are interested in the number of child jobs each parent job generates, we use a Poisson process to count the number of jobs. Additionally, we can view each job over a fixed interval of time, thus we can use the Poission distribution to estimate the number of jobs each parent generates. Additionally, each job runs for a certain amount of time. We can generate these run times using a random variable from the exponential distribution to determine the lifetime of each job.
 
-```{r poisson process for each job}
+```{r poisson_job, eval=FALSE}
 prob0 <- dpois(x = 0:max.col(mcGrid), lambda = 2.5)
 prob1 <- dpois(x = 0:max.col(mcGrid1), lambda = 2.5)
 ```
@@ -89,7 +89,7 @@ We then identified several values for both lambda and kappa across both cases wh
 
 We selected several values for lambda and kappa with matching ratios to determing first in the test case to see the overall patterns that would emerge from the changes, and then the simulation case, iterating over 40 times to provide a representative sample.  Our first attempt was to change the lambda while keeping kappa constant at 1 as shown below.
 
-```{r kappa_constant_trial}
+```{r kappa_constant_trial, eval=FALSE}
 trialKappas = c(1, 1, 1, 1, 1, 1)
 trialLambdas = c(0.1, 0.5, 1, 1.5, 2, 3)
 trialParams = matrix(c(trialLambdas, trialKappas), ncol = 2)
@@ -109,7 +109,7 @@ save(mcTrialOutput, file = "mcTrialOutput1.rda")
 
 The first sample simulation over 40 iterations for the requisite sample size was then completed.
 
-```{r kappa_constant_full}
+```{r kappa_constant_full,  eval=FALSE}
 # create a param grid
 lambdas = c(0.1, 0.5, 1, 1.5, 2, 3)
 kappas = c(1, 1, 1, 1, 1, 1)
@@ -128,7 +128,7 @@ save(mcGrid1, file = "mcGridOutput1.rda")
 ```
 From this, we then changed the values for kappa and lambda to reflect the ratios used in the first example while ensuring that kappa did not equal 1.
 
-```{r kappa_not_trial}
+```{r kappa_not_trial, eval=FALSE}
 # setting trial simulation values for kappa and lambda, where kappa != 1
 trialKappas = c(5, 0.5, 0.3, 4, 0.5, 0.3)
 trialLambdas = c(0.5, 0.25, 0.3, 6, 1, 1.5)
@@ -144,7 +144,7 @@ save(mcTrialOutput, file = "mcTrialOutput0.rda")
 
 And then the full run of 40 iterations of the simulation for our sample size.
 
-```{r kappa_not_full}
+```{r kappa_not_full,  eval=FALSE}
 # create a param grid
 lambdas = c(seq(0.1, 0.6, by = 0.1), seq(0.8, 2, by = 0.2), 
             seq(2.25, 3, by = 0.25))
@@ -186,7 +186,7 @@ The use of the simulation can be used to identified bottlenecks in the process.[
 [3] https://www.qualitymag.com/articles/91769-monte-carlo-and-manufacturing
 
 ## APPENDIX - BOOK CODE
-```{r book_code}
+```{r book_code,  eval=FALSE}
 
 # only dropped in what we need for any of the questions, even some
 # of this is a bit redundant
@@ -420,7 +420,7 @@ legend(x = 0.1, y = 3.25, legend = midBreaks, fill = colors,
 par(oldPar)
 
 ```
-```{r extra_viz}
+```{r extra_viz,  eval=FALSE}
 
 
 set.seed(seed1)
