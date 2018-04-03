@@ -140,22 +140,7 @@ mcOutputK1 = MCBA(params = paramGrid,
                      
 # save data for later use
 save(mcOutputK1, file = "data/mcOutputK1.rda")
-
-
-# VIZ STUFF
-# useful for results? put into a grid of boxes
-invisible(mapply(function(oneSet, lambda, kappa) {
-  plot(x = oneSet[2,], y = jitter(oneSet[1, ], 1), log = "x",
-       ylim = c(1,20), xlim = c(1, 10^7), pch = 19, cex = 0.6,
-       xlab = "num offspring", ylab = "jittered generations1")
-  text(x = 50, y = 15, bquote(paste(lambda == .(lambda))) )
-  text(x = 300, y = 15, bquote(paste(kappa == .(kappa))) )
-  
-  }, 
-  mcOutputK1, lambda = lambdas, kappa = kappas,
-  SIMPLIFY = TRUE))
-# notice that lambda == 0.2, jobs die off before end
-# see if this stays the same when we double and test ratio....
+load(file = "data/mcOutputK1.rda")
 
 
 
@@ -182,10 +167,39 @@ legend("left", inset = .08, bty = "n", cex = 0.8,
        fill = color3)
 
 ```
+The three-dimensional visualization attempts to illustrate the relationship between values of Kappa, Lambda, and the upper quartile's value of count of offspring - with a value of lambda=0, kappa=10 producing the lowest count of upper quartile offspring, and larger values of lamda producing higher upper quartile offspring.
 
-The first sample simulation over 40 iterations for the requisite sample size was then completed.
+```{r}
+#try to make this into a GGplot faceted viz
+str(mcOutputK1)
 
-From this, we then changed the values for kappa and lambda to reflect the ratios used in the first example while ensuring that kappa did not equal 1.
+
+AllExperiments<-data.frame()
+
+totalMembers <- length(mcOutputK1)
+member <- 1
+
+while (member <= totalMembers) {
+  tmp<-as.data.frame(t(as.data.frame(mcOutputK1[member])))
+  colnames(tmp) <- c("Generations", "Offspring")  
+  
+  tmp %<>% mutate(lambda = lambdas[member], kappa = kappa)
+  
+  AllExperiments <- rbind(AllExperiments, tmp)
+  
+  member<- member +1 
+}
+```
+
+```{r fig.width=10, fig.height=5}
+AllExperiments %>% ggplot(aes(x=Offspring, Generations)) + geom_point(alpha=0.2) + facet_wrap( ~ lambda, ncol=5) + scale_x_log10(labels=scales::comma) + geom_jitter() + ggtitle("Kappa = 1, Lambda As Shown On Facet Label")
+
+```
+The visualizations show a similar  effect - smaller values of lambda allow for fewer numbers of offspring and fewer generations to be produced than slightly larger values of lambda produce.  The effect tapers off for generations above lambda = 1.0, with fewer generations, but more offspring produced for values of lambda above 1.2.
+
+With the question of interest asking whether the ratios, or the absolute values of the two parameters forming the distribution of values, we set about to discover whether the ratios, or the absolute values, were the primary input to the outcomes.  
+
+We tested kappa at a constant at 2, with keeping the ratios used the same as in the this example - starting at 0.4, and increasing by 0.4 unitl reaching maximum value of lambda=4. 
 
 ```{r kappa_constant_2, echo=FALSE, include=TRUE, eval=FALSE, fig.height=8, fig.width=8.5}
 # setting simulation values for kappa and lambda, where kappa != to a constant of 1
@@ -209,26 +223,39 @@ mcOutputK2 = MCBA(params = paramGrid,
 
 # save for later
 save(mcOutputK2, file = "data/mcOutputK2.rda")
+load(file = "data/mcOutputK2.rda")
 
-
-# VIZ STUFF
-invisible(mapply(function(oneSet, lambda, kappa) {
-  plot(x = oneSet[2,], y = jitter(oneSet[1, ], 1), log = "x",
-       ylim = c(1,20), xlim = c(1, 10^7), pch = 19, cex = 0.6,
-       xlab = "num offspring", ylab = "jittered generations1")
-  text(x = 50, y = 15, bquote(paste(lambda == .(lambda))) )
-  text(x = 300, y = 15, bquote(paste(kappa == .(kappa))) )
-  
-  }, 
-  mcOutputK2, lambda = lambdas2, kappa = kappas2,
-  SIMPLIFY = TRUE))
-# yep, ratio prevails. Jobs die out @ 0.4 lambda
-# plot it up a bit more and conclude
 
 ```
 
-And then the full run of 40 iterations of the simulation for our sample size.
 
+```{r}
+#try to make this into a GGplot faceted viz
+ModifiedParameters<-data.frame()
+
+totalMembers <- length(mcOutputK2)
+member <- 1
+
+while (member <= totalMembers) {
+  tmp<-as.data.frame(t(as.data.frame(mcOutputK2[member])))
+  colnames(tmp) <- c("Generations", "Offspring")  
+  
+  tmp %<>% mutate(lambda = lambdas2[member], kappa = kappa)
+  
+  ModifiedParameters <- rbind(ModifiedParameters, tmp)
+  
+  member<- member +1 
+}
+```
+
+```{r fig.width=10, fig.height=5}
+AllExperiments %>% ggplot(aes(x=Offspring, Generations)) + geom_point(alpha=0.2) + facet_wrap( ~ lambda, ncol=5) + scale_x_log10(labels=scales::comma) + geom_jitter() + ggtitle("Kappa = 1, Lambda As Shown On Facet Label")
+```
+
+```{r fig.width=10, fig.height=5}
+ModifiedParameters %>% ggplot(aes(x=Offspring, Generations)) + geom_point(alpha=0.2) + facet_wrap( ~ lambda, ncol=5) + scale_x_log10(labels=scales::comma) + geom_jitter() + ggtitle("Kappa = 2, Lambda As Shown On Facet Label")
+```
+A comparison of the visualization of the two sets of parameters - the first with kappa=1 and lambda values from 0.2 to 2, incremented by 0.2, and the second, with kappa=2 and lambda values from 0.4 to 4, show identical visualizations of the distributions as their equivalent for the opposie value of kappa.  This would lead us to conclude that the ratio of the two values, lambda and kappa, are the determinants of the number of generations for a given number of offspring, and not the absolute values of the two variables.  The process shows similar clusters produced - a number of examples of the product of the Monte Carlo process producing up to 10 offspring, and a number of iterations on larger values of lambda producing more than 1,000 offspring.
 
 ## Conclusions and Future Work
 
