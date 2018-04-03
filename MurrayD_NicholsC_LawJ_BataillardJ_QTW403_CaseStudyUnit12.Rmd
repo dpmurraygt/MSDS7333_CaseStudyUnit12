@@ -1,5 +1,5 @@
 ---
-title: 'Branching Processes: Simulating Birth and Assassinations .... update this'
+title: 'Branching Processes: A Simulation Study of Parameter Effects'
 author: "Dennis Murray, Jared Law, Julien Bataillard, Cory Nichols"
 date: "April 3rd, 2018"
 output:
@@ -27,7 +27,7 @@ knitr::opts_knit$set(root.dir = dir)
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-```{r make, include=FALSE, cache=TRUE, eval=FALSE}
+```{r make, include=FALSE, echo=FALSE}
 # load relevant functions for simulation
 source("src/make.R")
 ```
@@ -41,7 +41,7 @@ Monte Carlo simulation is an extremely useful method to analyze complex mathemat
 
 In the context of software engineering, it is good practice to anticipate the likelihood of a release date, the cost of a project, or the impact of implementing new code base. These types of exercises usually fall into the category of risk analysis. However, it is often extremely difficult to successfully identify or anticipate outcomes if those outcomes are considered mostly random. One such software engineering example proudcing random outcomes is computer job queueing. 
 
-Even with parallel processing, a queue of interdependent tasks can form, often slowing down processing time (NTL 1). The number of these tasks can be completely random, specifically when considering the amount and type of requests the computer must consider. Typically, a parent job generates children which then generate additional children recursively. Each one of these jobs have a distinct run time that begins after the completion of their respective parent job. Obviously, this queueing process can result in significant slow down times, therefore it is often useful to simulate the outcomes of this branching process to optimize code and job processing logic.
+Even with parallel processing, a queue of interdependent tasks can form, often slowing down processing time (Nolan, et. al 1). The number of these tasks can be completely random, specifically when considering the amount and type of requests the computer must consider. Typically, a parent job generates children which then generate additional children recursively. Each one of these jobs have a distinct run time that begins after the completion of their respective parent job. Obviously, this queueing process can result in significant slow down times, therefore it is often useful to simulate the outcomes of this branching process to optimize code and job processing logic.
 
 In order to model the queueing process, we must utilize probability distributions to estimate the number of jobs created and their associated lifetimes. Given the randomness of the queueing process, we explore many different outcomes utilizing these probability distributions via Monte Carlo simulation. These simulations allow us to explore the distributions of job counts our queue model produces.
 
@@ -53,15 +53,15 @@ In the following section, we review academic literature on stochastic processes 
 
 Gabbiani and Cox (2) define a stochastic process as a collection of random variables indexed by a variable t, usually representing time. These processes are grouped into two categories: discrete-time and continuous-time stochastic processes. They are studied intensely as part of mathematical models to describe systems that occur in a random manner. The applications of these models can be found in computer science, cryptography, telecommunication, finance and many other academic disciplines and industries.
 
-One of the easiest stochastic processes to understand is the Bernoulli process (3) as it only has two possible outcomes: success or failure, given probabilities of {p, 1-p}. For example, tossing a fair coin ten times can be modeled as a Bernoulli process with a sequence of ten coin-flip results and probabilities of 0.5 for head and 0.5 for tail (since it is a fair coin). Each coin-flip is a binary-valued random variable. 
+One of the easiest stochastic processes to understand is the Bernoulli process (3) as it only has two possible outcomes: success or failure, given probabilities of {p, 1-p}. For example, tossing a fair coin ten times can be modeled as a Bernoulli process with a sequence of ten coin-flip results and probabilities of 0.5 for head and 0.5 for tail. Each coin-flip is a binary-valued random variable. 
 
-Another example of a stochastic process is the Poisson process which we use in this paper to estimate the number and run time of jobs in a queueing process. It is used in instances when we need to count the number of occurrences of an event that happens at random. In practice, (4) the Poisson process is used to model the number of car accidents at a site, the location of users in a wireless network, the request for individual documents on a web server and the outbreak of wars. 
+Another example of a stochastic process is the Poisson process which we use in this paper to estimate the number and run time of jobs in a queueing process. It is used in instances when we need to count the number of occurrences of an event that happens at random. In practice, (Pishro-Nik, 4) the Poisson process is used to model the number of car accidents at a site, the location of users in a wireless network, the request for individual documents on a web server and the outbreak of wars. 
 
-The Poisson process with rate $\lambda$ is defined as (4):
-Let $\lambda$ > 0 be fixed. The counting process {N(t), t $\elementof$ [0,???)} is called a Poisson process with rate $\lambda$ if all the following conditions hold:
-1.	N(0) = 0;
-2.	N(t) has independent increments;
-3.	the number of arrivals in any interval of length ??>0 has Poisson(????) distribution.
+The Poisson process with rate $\lambda$ is defined as:
+Let $\lambda$ > 0 be fixed. The counting process {N(t), t $\elementof$ [0,$\inf$)} is called a Poisson process with rate $\lambda$ if all the following conditions hold:
+1.	*N*(0) = 0;
+2.	*N*(t) has independent increments;
+3.	the number of arrivals in any interval of length $\tau$>0 has *Poisson*($\lambda$$\tau$) distribution.
 
 Modeling a random process given only a few samples of that respective process can lead to inconclusive or erroneous assumptions. In order to empirically analyze these random processes, Monte Carlo simulations are used frequently. This method is used to generate random variables for modeling risk or uncertainty of a system (5). Monte Carlo simulations have some key advantages over more deterministic analyses (6) including simulated outcomes and probabiities for each outcome. It is easy to generate graphical representations based on the results, and one can easily spot which output has the largest effect on the bottom line results. Monte Carlo simulations are used extensively to simulate outcomes, especially for electoral processes and in sports betting.
 
@@ -81,7 +81,7 @@ This model represents a branching process, the outputs of which are the number o
 The Poisson and exponential distributions allow us to parameterize our queueing process. Each distribution contains a rate parameter, which represent the number of events per unit time. Specifically, we use lambda and kappa for our rate designations for the Poisson and exponential distributions, respectively. These rate parameters can elongate or shorten the queueing process dramatically. Obviously, if a parent generates many child jobs, the probability of a process continuing is greater. Further, if a job has a longer run time, the probability of a process continuing is also greater. It is the interaction of these two parameters we are interested in analyzing. As an example, we randomly generate 5000 samples from a Poisson and exponential distribution with rate parameters of 0.25 and 1 below.
 
 Figure 1: Rate Parameter Comparisons from 5000 Randomly Generated Variables
-```{r dist_comparisons, echo=FALSE, include=TRUE, fig.height=6, fig.width=8.5}
+```{r dist_comparisons, echo=FALSE, include=TRUE, cache=TRUE, fig.height=6, fig.width=8.5}
 
 par(mfrow=c(2,2))
 set.seed(1)
@@ -112,15 +112,12 @@ In order to investigate the relationship between lambda and kappa in our queuein
 
 ## Results
 
-## needs viz and more explanation, code done for sim
+In order to test the relationship between the kappa and lambda parameters, we identified two test cases. In the first case, we hold kappa constant at one and test a range of lambda values from zero to one. We then double the lambda and kappa rates in the second case and examine comparisons between the two tests cases using Monte Carlo simulation. In both cases, kappa, or the rate parameter for the exponential distribution, is held as a constant *c*. This allows us to test the ratio of the two parameters directly. Additionally, it also ensures the ratio value of *k*/*c* is equal to one of the values of lambda from the first test case.
 
-We then identified several values for both lambda and kappa across both cases where kappa is kept constant at 1 and where kappa = c and does not equal 1.  These values are indicated in the table below.
+### Test Case One Results
 
-We selected several values for lambda and kappa with matching ratios to determing first in the test case to see the overall patterns that would emerge from the changes, and then the simulation case, iterating over 500 times to provide a representative sample.  Our first attempt was to change the lambda while keeping kappa constant at 1 as shown below.
-
-```{r kappa_constant_1, echo=FALSE, include=TRUE, eval=FALSE, fig.height=8, fig.width=8.5}
-
-lambdas = c(seq(.2, 2, by = 0.2))
+```{r test_case1, include=FALSE, echo=FALSE, cache=TRUE}
+lambdas = c(seq(0.1, 1, by = 0.1))
 kappas = c(1)
 # matrix of parameter vals to pass to monte carlo
 paramGrid = as.matrix(expand.grid(lambdas, kappas))
@@ -132,105 +129,110 @@ paramGrid = as.matrix(expand.grid(lambdas, kappas))
 # returns a matrix with cols == number of reps, with each
 # column containing num gens and num off spring in rows
 
+
 set.seed(1)
-mcOutputK1 = MCBA(params = paramGrid, 
-                     repeats = 500, # number of repeats
-                     mG = 20, # max number of generations
-                     mO = 1000) # maximum number of offpspring
+#mcOutputK1 = MCBA(params = paramGrid, 
+#                     repeats = 500, # number of repeats
+#                     mG = 20, # max number of generations
+#                     mO = 1000) # maximum number of offpspring
                      
 # save data for later use
-save(mcOutputK1, file = "data/mcOutputK1.rda")
+#save(mcOutputK1, file = "data/mcOutputK1.rda")
 load(file = "data/mcOutputK1.rda")
 
-
-
-# viz - upper quartile of complete times - this is probably overkill considering
-# we can just use a bar or line given we dont have an increasing kappa....
-logUQkids = sapply(mcTrialOutput, function(x) 
-               log(quantile(x[2, ], probs = 0.75), base = 10))
-
-UQCut = cut(logUQkids, breaks = c(-0.1, 0.5, 2, max(logUQkids)) )
-# get colors for each cut cat
-color3 = c("#b3cde3aa", "#8856a7aa", "#810f7caa")
-colors = color3[UQCut] # map colors to each upper quartile cut
-
-# 3D plot upper quartiles
-library(scatterplot3d)
-sdp = scatterplot3d(x = trialLambdas, y = trialKappas, 
-                    z = logUQkids, pch = 15, color = colors,
-                    xlab = "Lambda", ylab = "Kappa",
-                    zlab = "Upper Quartile Offspring",
-                    angle = 120, type="h")
-
-legend("left", inset = .08, bty = "n", cex = 0.8,
-       legend = c("[0, 0.5)", "[0.5, 2)", "[2, 5)"), 
-       fill = color3)
-
 ```
-The three-dimensional visualization attempts to illustrate the relationship between values of Kappa, Lambda, and the upper quartile's value of count of offspring - with a value of lambda=0, kappa=10 producing the lowest count of upper quartile offspring, and larger values of lamda producing higher upper quartile offspring.
 
-```{r}
-#try to make this into a GGplot faceted viz
+Utilizing methods described in the previous section, we simulate our queueing process using Poisson lambda values between zero and one and a constant exponential rate parameter kappa of one. 
+
+Figure 2 clearly shows a low value of lambda results in smaller quantities of offspring when kappa, which controls the run time of each job, is held constant at one. This makes logical sense, as the lambda rate as part of the Poisson distribution controls the amount of offpsring each parent produces in our queueing process. As lambda rises, holding kappa constant, we notice that our queueing process runs up against the generational (20) and offspring boundaries (1000), indicating a longer queueing process.
+
+```{r gg_up, include=FALSE, echo=FALSE, cache=TRUE}
+# faceted viz for simulation results
 str(mcOutputK1)
 
-
+# pull together experiment results into df for ggplot viz purposes
 AllExperiments<-data.frame()
 
 totalMembers <- length(mcOutputK1)
 member <- 1
 
+# frame df to show faceted monte carlo results given kappa = 1 and adjusted lambda
 while (member <= totalMembers) {
   tmp<-as.data.frame(t(as.data.frame(mcOutputK1[member])))
   colnames(tmp) <- c("Generations", "Offspring")  
   
-  tmp %<>% mutate(lambda = lambdas[member], kappa = kappa)
+  tmp %<>% mutate(lambda = lambdas[member], kappa = kappas)
   
   AllExperiments <- rbind(AllExperiments, tmp)
   
+  #sentry
   member<- member +1 
 }
 ```
 
-```{r fig.width=10, fig.height=5}
-AllExperiments %>% ggplot(aes(x=Offspring, Generations)) + geom_point(alpha=0.2) + facet_wrap( ~ lambda, ncol=5) + scale_x_log10(labels=scales::comma) + geom_jitter() + ggtitle("Kappa = 1, Lambda As Shown On Facet Label")
+```{r testcase1_plots, include=TRUE, echo=FALSE, cache=TRUE, fig.width=8.5, fig.height=5}
+# plot faceted experiment results
+AllExperiments %>% ggplot(aes(x=Offspring, Generations)) + 
+  geom_point(alpha=0.2) + facet_wrap( ~ lambda, ncol=5) + 
+  scale_x_log10(labels=scales::comma) + 
+  geom_jitter() + 
+  ggtitle("Figure 2: Kappa of 1, Lambda As Shown On Facet Label")
 
 ```
-The visualizations show a similar  effect - smaller values of lambda allow for fewer numbers of offspring and fewer generations to be produced than slightly larger values of lambda produce.  The effect tapers off for generations above lambda = 1.0, with fewer generations, but more offspring produced for values of lambda above 1.2.
 
-With the question of interest asking whether the ratios, or the absolute values of the two parameters forming the distribution of values, we set about to discover whether the ratios, or the absolute values, were the primary input to the outcomes.  
+The effect tapers off for generations above lambda = 1.0, with fewer generations, but more offspring produced for values of lambda above 1.2. We can aggregate this effect by examining the log upper quartile value for each lambda and kappa parameter value in Figure 3.
 
-We tested kappa at a constant at 2, with keeping the ratios used the same as in the this example - starting at 0.4, and increasing by 0.4 unitl reaching maximum value of lambda=4. 
+```{r uq_viz_bar, echo=FALSE, include=TRUE, fig.width=8.5, fig.height=4}
 
-```{r kappa_constant_2, echo=FALSE, include=TRUE, eval=FALSE, fig.height=8, fig.width=8.5}
+# viz - upper quartile of complete times - this is probably overkill considering
+# we can just use a bar or line given we dont have an increasing kappa....
+logUQkids = sapply(mcOutputK1, function(x) 
+               log(quantile(x[2, ], probs = 0.75), base = 10))
+
+data.frame(lambdas, logUQkids) %>%
+ggplot(aes(x=lambdas, y=logUQkids))+
+  geom_col()+
+  ggtitle("Figure 3: Upper Quartile Offspring for Kappa of 1, Lambda on X Axis")
+
+```
+
+A large jump in offspring is noticeable when lambda crosses the 0.75 threshold. Given the Poisson rate parameter lambda has a significant influence on the number of offspring, we could hypothesize that raising lambda would ultimately result in a longer queueing process in most scenarios. However, we do not consider kappa, or the rate parameter for the lifetime of each job, in our simulation. 
+
+### Test Case Two Results
+
+```{r test_case2, echo=FALSE, include=FALSE, cache=TRUE}
 # setting simulation values for kappa and lambda, where kappa != to a constant of 1
-# book calls for lambda / constant, so simply double to keep ratios the same, test to see if we get
-# similar results visually
+# book calls for lambda / constant, so simply double to keep ratios the same, test to see if we get similar results empirically
 # we must keep Kappa constant here but != 1, simply double, test to see if simulations stay roughly same
 # must ensure that the l/k rate is similar to l from previous sim as well, doubling is easiest here.
-# testing to see if the ratio keeps these simulations roughly constant or if they differ
-# expect constant
+# testing to see if the ratio keeps these simulations roughly constant or if they differ expect constant
 
 lambdas2 = lambdas*2
 kappas2 = kappas*2
 paramGrid = as.matrix(expand.grid(lambdas2, kappas2))
 
 set.seed(1)
-# simulation with doubled params
-mcOutputK2 = MCBA(params = paramGrid, 
-                     repeats = 500, 
-                     mG = 20, 
-                     mO = 1000)
+# simulation with doubled params -- we keep this as a .rda file to avoid re-processing
+#mcOutputK2 = MCBA(params = paramGrid, 
+#                     repeats = 500, 
+#                     mG = 20, 
+#                     mO = 1000)
 
 # save for later
-save(mcOutputK2, file = "data/mcOutputK2.rda")
+#save(mcOutputK2, file = "data/mcOutputK2.rda")
 load(file = "data/mcOutputK2.rda")
-
 
 ```
 
+Previously, we noticed that a smaller value of kappa results in longer lifetimes for each job. However, we have just seen that increasing the lambda parameter controlling the number of offspring for each parent resulted in dramatic increases in processing time in our queueing simulations. We directly test whether one parameter has an effect on our queueing process, or if the ratio between kappa and lambda is more important.
 
-```{r}
-#try to make this into a GGplot faceted viz
+We double the lambda and kappa rate parameters for our second test case. This allows us to maintain the ratio between lambda and kappa from the first scenario, but also test whether or not lambda has a more dramatic effect on our queueing process longevity. Additionally, each ratio is equal to a lambda value from the previous test, to ensure we address the parameter ratio impact on our queueing process appropriately.
+
+We test kappa using a constant of two and let lambda range from 0.2 to two. We iterate over each parameter combination and simulate offspring and generations from our queueing process 500 times. The offspring and generations output can be seen in Figure 4.
+
+```{r gg_up2, include=TRUE, echo=FALSE, cache=TRUE}
+
+# facet grid for viz purposes showing results
 ModifiedParameters<-data.frame()
 
 totalMembers <- length(mcOutputK2)
@@ -240,7 +242,7 @@ while (member <= totalMembers) {
   tmp<-as.data.frame(t(as.data.frame(mcOutputK2[member])))
   colnames(tmp) <- c("Generations", "Offspring")  
   
-  tmp %<>% mutate(lambda = lambdas2[member], kappa = kappa)
+  tmp %<>% mutate(lambda = lambdas2[member], kappa = kappas2)
   
   ModifiedParameters <- rbind(ModifiedParameters, tmp)
   
@@ -248,25 +250,44 @@ while (member <= totalMembers) {
 }
 ```
 
-```{r fig.width=10, fig.height=5}
-AllExperiments %>% ggplot(aes(x=Offspring, Generations)) + geom_point(alpha=0.2) + facet_wrap( ~ lambda, ncol=5) + scale_x_log10(labels=scales::comma) + geom_jitter() + ggtitle("Kappa = 1, Lambda As Shown On Facet Label")
+```{r testcase2_plots, include=TRUE, echo=FALSE, cache=TRUE, fig.width=8.5, fig.height=4}
+ModifiedParameters %>% ggplot(aes(x=Offspring, Generations)) + 
+  geom_point(alpha=0.2) + facet_wrap( ~ lambda, ncol=5) + 
+  scale_x_log10(labels=scales::comma) + 
+  geom_jitter() +
+  ggtitle("Figure 4: Kappa of 2, Lambda As Shown On Facet Label")
 ```
 
-```{r fig.width=10, fig.height=5}
-ModifiedParameters %>% ggplot(aes(x=Offspring, Generations)) + geom_point(alpha=0.2) + facet_wrap( ~ lambda, ncol=5) + scale_x_log10(labels=scales::comma) + geom_jitter() + ggtitle("Kappa = 2, Lambda As Shown On Facet Label")
+A comparison of the visualization of the two tests show nearly identical results for generations and offspring. This would lead us to conclude that the ratio of the two values, lambda and kappa, are the determinants of the number of generations for a given number of offspring. One variable does not dominate the results of our queueing process given our simulation exercise.  The process shows similar clusters produced - a number of examples of the product of the Monte Carlo process producing up to ten offspring, and a number of iterations on larger values of lambda producing more than 1,000 offspring. 
+
+Additionally, the bar chart for the upper quartile of offspring produced for each simulated parameter combination result is nearly identical to test case one.
+
+```{r uq_viz_bar2, echo=FALSE, include=TRUE, fig.width=8.5, fig.height=5}
+
+# viz - upper quartile of complete times - this is probably overkill considering
+# we can just use a bar or line given we dont have an increasing kappa....
+logUQkids = sapply(mcOutputK2, function(x) 
+               log(quantile(x[2, ], probs = 0.75), base = 10))
+
+data.frame(lambdas2, logUQkids) %>%
+ggplot(aes(x=lambdas2, y=logUQkids))+
+  geom_col()+
+  ggtitle("Figure 5: Upper Quartile Offspring for Kappa of 2, Lambda on X Axis")
+
 ```
-A comparison of the visualization of the two sets of parameters - the first with kappa=1 and lambda values from 0.2 to 2, incremented by 0.2, and the second, with kappa=2 and lambda values from 0.4 to 4, show identical visualizations of the distributions as their equivalent for the opposie value of kappa.  This would lead us to conclude that the ratio of the two values, lambda and kappa, are the determinants of the number of generations for a given number of offspring, and not the absolute values of the two variables.  The process shows similar clusters produced - a number of examples of the product of the Monte Carlo process producing up to 10 offspring, and a number of iterations on larger values of lambda producing more than 1,000 offspring.
+
 
 ## Conclusions and Future Work
 
-The use of simulation, and especially Monte Carlo simulation, has become an increasing part of the public lexicon in recent years.  Many models that are visible to the public include at some level a Monte Carlo simulation.  These include election results modeling, as well as the outcomes of major sports leagues.  Fivethirtyeight.com's models for both the election, as well as for results of sports leagues, include Monte Carlo simulations. [1]  The method has also been mentioned in the context of quantative finance, genetics and many other fields.
+After investigating two tests cases, we have empirically confirmed that the ratio of parameters for the queueing process drives the longevity of the process. This result is in line with expectations. The exponential distribution shows longer lifetimes for jobs when its rate parameter is small. The Poisson distribution produces more children for each parent when its parameter is larger. Thus, there is a balance between these two parameters that must be attained in order to lengthen the queueing process.
 
-The pitfalls of Monte Carlo simulation may be somewhat obvious.  It relies on an assumption that the future follows some probabalistic distribution, and that the future distribution is consistent with the past values of the variable.  Like most statistically-based forecast methods, there's some expectation that major shifts in the underlying causes of change in the behavior of the variable will remain the same.  In the example of a model for a Financial Market, while the major shifts and catastrophic market events are possible in the simulation, the actual probability of the event might differ from the *n*-standard deviations from the mean that would be expected.
+For a software engineer, these results could help optimize parallel processing and cpu load. For instance, code could be written to optimize application performance by offloading processes to underutilized cores if the probability of branching is high. We know a process is more likely to extend if a parent job produces more children or if each job tends to have a longer run time. These characteristics can be analyzed dynamically and sent to the cpu in a structured and efficient manner to optimize available processing cycles. Software engineers could easily apply sensitivity analysis using Monte Carlo simulation while analzying parameter variables for assumed distributions in order to determine worst and best case scenarios for application performance.
 
-In this case, we simulated a process of birth and death of jobs, with dependencies between the start and finish, to understand the total time required.  In the context of the case, these events were referenced as jobs or processes that are broken up for parallel computing, and the process by which the later jobs must wait for the completion of earlier jobs.  This same method could be employed for the analysis of a manufacturing line.  In manufacturing, the Monte Carlo process can be used to simulate a process with interdependencies, and variability. 
+The use of Monte Carlo simulation has become an increasing part of the public lexicon in recent years. Many models that are visible to the public include at some level a Monte Carlo simulation.  These include election results modeling, as well as the outcomes of major sports leagues.  Fivethirtyeight.com's models for both the election, as well as for results of sports leagues, include Monte Carlo simulations (Boice 7).  The method has also been mentioned in the context of quantative finance, genetics and many other fields.
 
-The use of the simulation can be used to identified bottlenecks in the process.[3]
+The pitfalls of Monte Carlo simulation may be somewhat obvious. It relies on an assumption that the future follows some probabalistic distribution, and that the future distribution is consistent with the past values of the variable. Like most statistically-based forecast methods, there's some expectation that major shifts in the underlying causes of change in the behavior of the variable will remain the same. In the example of a model for a Financial Market, while the major shifts and catastrophic market events are possible in the simulation, the actual probability of the event might differ from the *n*-standard deviations from the mean that would be expected.
 
+In this case, we simulated a process of birth and death of jobs for a central processing unit, with dependencies between the start and finish. We attempted to understand the total time required for a queueing process.  In the context of the case, these events were referenced as jobs or processes that are broken up for parallel computing, and the process by which the later jobs must wait for the completion of earlier jobs.  This same method could be employed for the analysis of a manufacturing line.  In manufacturing, the Monte Carlo process can be used to simulate a process with interdependencies, and variability. These studies allow for a greater understanding of risks specific to a process or even a business model. These simulations can help to enhance enterprise resource planning, supply chain continuity and minimize financial losses (Heffernan 8).
 
 
 ## References
@@ -285,12 +306,9 @@ http://www.palisade.com/risk/monte_carlo_simulation.asp
 
 7. Boice, J. "How Our Soccer Projections Work." FiveThirtyEight, 19 Jan 2017. https://fivethirtyeight.com/features/how-our-club-soccer-projections-work/
 
-8. Smid, J. et al. "Strengths and weaknesses of Monte Carlo simulation models and Bayesian belief networks in microbial risk assessment." ScienceDirect, 30 May 2010. https://www.sciencedirect.com/science/article/pii/S0168160509006680
-
-9. Heffernan, R. "Monte Carlo and Manufacturing." Quality Magazine, 1 April 2014.
+8. Heffernan, R. "Monte Carlo and Manufacturing." Quality Magazine, 1 April 2014.
 https://www.qualitymag.com/articles/91769-monte-carlo-and-manufacturing
 
-## APPENDIX - BOOK CODE
 
 ```{r book_code_and_viz_scratch,  eval=FALSE}
 
